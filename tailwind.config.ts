@@ -13,6 +13,11 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        display: ['"Bebas Neue"', '"Barlow Condensed"', 'sans-serif'],
+        sans: ['Barlow', 'system-ui', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -62,6 +67,15 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      backgroundImage: {
+        'gradient-primary': 'var(--gradient-primary)',
+        'gradient-dark': 'var(--gradient-dark)',
+      },
+      boxShadow: {
+        glow: 'var(--shadow-glow)',
+        'glow-strong': 'var(--shadow-glow-strong)',
+        card: 'var(--shadow-card)',
       },
       keyframes: {
         "accordion-down": {
