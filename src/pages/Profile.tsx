@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Settings, LogOut, Award, ChevronRight, BarChart3 } from "lucide-react";
+import { Settings, LogOut, Award, ChevronRight, BarChart3, type LucideIcon } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { SportBadge } from "@/components/SportBadge";
 import { currentUser } from "@/data/mock";
@@ -103,7 +103,7 @@ const SettingsRow = ({
   label,
   danger,
 }: {
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: LucideIcon;
   label: string;
   danger?: boolean;
 }) => (

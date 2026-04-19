@@ -1,11 +1,11 @@
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Star, MapPin, Car, Droplet, Lightbulb, Coffee, Building2, Users as UsersIcon } from "lucide-react";
+import { ArrowLeft, Star, MapPin, Car, Droplet, Lightbulb, Coffee, Building2, Users as UsersIcon, type LucideIcon } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { SportBadge } from "@/components/SportBadge";
 import { courts } from "@/data/mock";
 import { toast } from "sonner";
 
-const amenityIcons: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+const amenityIcons: Record<string, LucideIcon> = {
   Estacionamiento: Car,
   Regaderas: Droplet,
   Iluminación: Lightbulb,
