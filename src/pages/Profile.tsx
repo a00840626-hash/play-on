@@ -28,7 +28,7 @@ const Profile = () => {
               }}
             >
               <span className="font-display text-primary" style={{ fontSize: 48, lineHeight: 1 }}>
-                AF
+                AP
               </span>
             </div>
             <div
@@ -50,10 +50,10 @@ const Profile = () => {
             className="font-display text-foreground text-center mt-4"
             style={{ fontSize: 32, letterSpacing: "0.04em", lineHeight: 1 }}
           >
-            ANDRÉS FUENTES
+            ANDREA POSADAS
           </h1>
           <p className="font-body text-muted-foreground text-[13px] mt-2">
-            @andresfuentes · Monterrey, NL
+            @andreaposadas · Monterrey, NL
           </p>
 
           <div
