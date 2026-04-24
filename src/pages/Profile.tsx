@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Settings, LogOut, Check, ArrowUpRight, Share, BarChart3, ChevronLeft, Share2, ChevronRight, type LucideIcon } from "lucide-react";
 import { PhoneFrame } from "@/components/playon/PhoneFrame";
-import { AppShell } from "@/components/AppShell";
+
 import { RankingChart } from "@/components/playon/RankingChart";
 import { SportCard } from "@/components/playon/SportCard";
 import { Heatmap } from "@/components/playon/Heatmap";
