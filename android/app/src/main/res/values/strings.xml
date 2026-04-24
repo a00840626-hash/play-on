@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">PlayOn</string>
+    <string name="title_activity_main">PlayOn</string>
+    <string name="package_name">app.lovable.fce04891e5d746e6ab697fdfeab2099f</string>
+    <string name="custom_url_scheme">app.lovable.fce04891e5d746e6ab697fdfeab2099f</string>
+</resources>
