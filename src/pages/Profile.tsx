@@ -8,16 +8,9 @@ import { Heatmap } from "@/components/playon/Heatmap";
 
 const Profile = () => {
   return (
-    <>
-      {/* Mobile / tablet: regular app shell with bottom nav */}
-      <div className="md:hidden">
-        <AppShell subtitle="CV Deportivo">
-          <ProfileContent />
-        </AppShell>
-      </div>
-
-      {/* Desktop: rendered inside an iPhone 15 Pro frame */}
-      <main className="hidden md:flex min-h-screen w-full stage-bg items-start justify-center py-10 px-6">
+    <main className="min-h-screen w-full stage-bg flex items-start justify-center py-6 sm:py-10 px-2 sm:px-6 overflow-x-hidden">
+      {/* Scale down the 421px-wide frame on narrow viewports so it fits */}
+      <div className="origin-top scale-[0.88] sm:scale-100">
         <PhoneFrame>
           <div className="min-h-full bg-background pb-8">
             <div className="relative z-30 flex items-center justify-between px-5 pt-[58px] pb-3 h-[114px]">
@@ -42,8 +35,8 @@ const Profile = () => {
             <ProfileContent />
           </div>
         </PhoneFrame>
-      </main>
-    </>
+      </div>
+    </main>
   );
 };
 
