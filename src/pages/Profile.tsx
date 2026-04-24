@@ -452,7 +452,7 @@ const ProfileContent = () => {
         <SettingsRow icon={Settings} label="Configuración" />
         <SettingsRow icon={LogOut} label="Cerrar sesión" danger />
       </section>
-    </AppShell>
+    </>
   );
 };
 
