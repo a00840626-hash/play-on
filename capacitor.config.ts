@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'PlayOn',
   webDir: 'dist',
   server: {
-    url: 'https://fce04891-e5d7-46e6-ab69-7fdfeab2099f.lovableproject.com?forceHideBadge=true',
+    url: 'https://id-preview--fce04891-e5d7-46e6-ab69-7fdfeab2099f.lovable.app',
     cleartext: true
   }
 };
