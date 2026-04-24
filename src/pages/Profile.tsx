@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { Settings, LogOut, Check, ArrowUpRight, Share, BarChart3, ChevronRight, type LucideIcon } from "lucide-react";
+import { Settings, LogOut, Check, ArrowUpRight, Share, BarChart3, ChevronLeft, Share2, ChevronRight, type LucideIcon } from "lucide-react";
+import { PhoneFrame } from "@/components/playon/PhoneFrame";
 import { AppShell } from "@/components/AppShell";
 import { RankingChart } from "@/components/playon/RankingChart";
 import { SportCard } from "@/components/playon/SportCard";
@@ -7,7 +8,48 @@ import { Heatmap } from "@/components/playon/Heatmap";
 
 const Profile = () => {
   return (
-    <AppShell subtitle="CV Deportivo">
+    <>
+      {/* Mobile / tablet: regular app shell with bottom nav */}
+      <div className="md:hidden">
+        <AppShell subtitle="CV Deportivo">
+          <ProfileContent />
+        </AppShell>
+      </div>
+
+      {/* Desktop: rendered inside an iPhone 15 Pro frame */}
+      <main className="hidden md:flex min-h-screen w-full stage-bg items-start justify-center py-10 px-6">
+        <PhoneFrame>
+          <div className="min-h-full bg-background pb-8">
+            <div className="relative z-30 flex items-center justify-between px-5 pt-[58px] pb-3 h-[114px]">
+              <button className="w-9 h-9 flex items-center justify-center text-foreground/90" aria-label="Volver">
+                <ChevronLeft size={22} strokeWidth={2.25} />
+              </button>
+              <span
+                className="font-condensed text-[13px] uppercase text-muted-foreground"
+                style={{ letterSpacing: "0.25em" }}
+              >
+                CV Deportivo
+              </span>
+              <div className="flex items-center gap-1">
+                <button className="w-9 h-9 flex items-center justify-center text-foreground/90" aria-label="Compartir">
+                  <Share2 size={18} strokeWidth={2} />
+                </button>
+                <button className="w-9 h-9 flex items-center justify-center text-foreground/90" aria-label="Ajustes">
+                  <Settings size={18} strokeWidth={2} />
+                </button>
+              </div>
+            </div>
+            <ProfileContent />
+          </div>
+        </PhoneFrame>
+      </main>
+    </>
+  );
+};
+
+const ProfileContent = () => {
+  return (
+    <>
       {/* Hero profile card */}
       <section
         className="relative px-5 pt-6 pb-7 overflow-hidden"
@@ -28,7 +70,7 @@ const Profile = () => {
               }}
             >
               <span className="font-display text-primary" style={{ fontSize: 48, lineHeight: 1 }}>
-                AF
+                AP
               </span>
             </div>
             <div
@@ -50,10 +92,10 @@ const Profile = () => {
             className="font-display text-foreground text-center mt-4"
             style={{ fontSize: 32, letterSpacing: "0.04em", lineHeight: 1 }}
           >
-            ANDRÉS FUENTES
+            ANDREA POSADAS
           </h1>
           <p className="font-body text-muted-foreground text-[13px] mt-2">
-            @andresfuentes · Monterrey, NL
+            @andreaposadas · Monterrey, NL
           </p>
 
           <div
@@ -410,7 +452,7 @@ const Profile = () => {
         <SettingsRow icon={Settings} label="Configuración" />
         <SettingsRow icon={LogOut} label="Cerrar sesión" danger />
       </section>
-    </AppShell>
+    </>
   );
 };
 
