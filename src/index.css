@@ -49,6 +49,13 @@
 
     --transition-base: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
+    /* Sport accents */
+    --sport-football: 152 100% 50%;
+    --sport-tennis: 212 100% 62%;
+    --sport-basket: 14 100% 50%;
+    --sport-volley: 49 100% 50%;
+    --trophy: 49 100% 50%;
+
     /* Sidebar (unused but kept) */
     --sidebar-background: 0 0% 4%;
     --sidebar-foreground: 0 0% 96%;
@@ -77,6 +84,12 @@
     font-family: 'Bebas Neue', 'Barlow Condensed', sans-serif;
     letter-spacing: 0.02em;
   }
+  .font-condensed {
+    font-family: 'Barlow Condensed', 'Barlow', system-ui, sans-serif;
+  }
+  .font-mono-tech {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+  }
   .font-mono {
     font-family: 'JetBrains Mono', ui-monospace, monospace;
   }
@@ -94,6 +107,15 @@
   }
   .scrollbar-hide::-webkit-scrollbar { display: none; }
   .scrollbar-hide { scrollbar-width: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  .field-grid {
+    background-image:
+      linear-gradient(hsl(var(--primary) / 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--primary) / 0.04) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
 
   @keyframes pulse-glow {
     0%, 100% { box-shadow: 0 0 0 0 hsl(152 100% 50% / 0.5); }

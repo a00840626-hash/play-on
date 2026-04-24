@@ -52,6 +52,11 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        "sport-football": "hsl(var(--sport-football))",
+        "sport-tennis": "hsl(var(--sport-tennis))",
+        "sport-basket": "hsl(var(--sport-basket))",
+        "sport-volley": "hsl(var(--sport-volley))",
+        trophy: "hsl(var(--trophy))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
