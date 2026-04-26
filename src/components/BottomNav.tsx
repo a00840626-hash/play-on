@@ -14,10 +14,10 @@ export const BottomNav = () => {
   const { pathname } = useLocation();
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-50 bg-card/95 backdrop-blur-md border-t border-border"
+      className="sticky bottom-0 inset-x-0 z-40 bg-card/95 backdrop-blur-md border-t border-border"
       aria-label="Navegación principal"
     >
-      <ul className="mx-auto flex max-w-screen-md items-stretch justify-between px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+      <ul className="mx-auto flex max-w-screen-md items-stretch justify-between px-2 pt-2 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
         {items.map(({ to, label, icon: Icon }) => {
           const active = to === "/" ? pathname === "/" : pathname.startsWith(to);
           return (
