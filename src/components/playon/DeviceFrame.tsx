@@ -113,32 +113,39 @@ export const DeviceFrame = ({ children }: DeviceFrameProps) => {
                   <span className="font-body font-semibold text-foreground text-[16px] tabular-nums">
                     9:41
                   </span>
-                  <div className="flex items-center gap-1.5 text-foreground">
-                    <svg width="18" height="12" viewBox="0 0 17 11" fill="currentColor">
+                  <div className="flex items-center gap-[6px] text-foreground">
+                    {/* Signal bars */}
+                    <svg width="18" height="12" viewBox="0 0 17 11" fill="currentColor" aria-label="Señal">
                       <rect x="0" y="7" width="3" height="4" rx="0.5" />
                       <rect x="4.5" y="5" width="3" height="6" rx="0.5" />
                       <rect x="9" y="2.5" width="3" height="8.5" rx="0.5" />
                       <rect x="13.5" y="0" width="3" height="11" rx="0.5" />
                     </svg>
-                    <span className="font-body font-semibold text-[12px] leading-none">5G</span>
-                    <div className="relative ml-0.5 flex items-center">
+                    {/* Wi-Fi icon */}
+                    <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor" aria-label="Wi-Fi">
+                      <path d="M8 11.2a1.1 1.1 0 1 0 0-2.2 1.1 1.1 0 0 0 0 2.2Z" />
+                      <path d="M3.95 6.95a.6.6 0 0 1 0-.85 5.72 5.72 0 0 1 8.1 0 .6.6 0 1 1-.85.85 4.52 4.52 0 0 0-6.4 0 .6.6 0 0 1-.85 0Z" />
+                      <path d="M1.65 4.65a.6.6 0 0 1 0-.85 8.98 8.98 0 0 1 12.7 0 .6.6 0 1 1-.85.85 7.78 7.78 0 0 0-11 0 .6.6 0 0 1-.85 0Z" />
+                    </svg>
+                    {/* Battery */}
+                    <div className="relative ml-1 flex items-center" aria-label="Batería">
                       <div
                         className="rounded-[3px] border"
                         style={{
                           width: 26,
                           height: 12,
                           borderColor: "currentColor",
-                          opacity: 0.55,
+                          opacity: 0.6,
                         }}
                       >
                         <div
                           className="m-[1.5px] rounded-[1.5px] bg-current"
-                          style={{ width: 20, height: 7 }}
+                          style={{ width: 21, height: 7 }}
                         />
                       </div>
                       <div
                         className="bg-current rounded-r-sm"
-                        style={{ width: 1.5, height: 5, marginLeft: 1, opacity: 0.55 }}
+                        style={{ width: 1.5, height: 5, marginLeft: 1, opacity: 0.6 }}
                       />
                     </div>
                   </div>
