@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
-import { Settings, LogOut, Check, ArrowUpRight, Share, BarChart3, ChevronLeft, Share2, ChevronRight, type LucideIcon } from "lucide-react";
-import { PhoneFrame } from "@/components/playon/PhoneFrame";
+import { Settings, LogOut, Check, ArrowUpRight, Share, BarChart3, ChevronRight, type LucideIcon } from "lucide-react";
+import { AppShell } from "@/components/AppShell";
 
 import { RankingChart } from "@/components/playon/RankingChart";
 import { SportCard } from "@/components/playon/SportCard";
@@ -8,35 +8,9 @@ import { Heatmap } from "@/components/playon/Heatmap";
 
 const Profile = () => {
   return (
-    <main className="min-h-screen w-full stage-bg flex items-start justify-center py-6 sm:py-10 px-2 sm:px-6 overflow-x-hidden">
-      {/* Scale down the 421px-wide frame on narrow viewports so it fits */}
-      <div className="origin-top scale-[0.88] sm:scale-100">
-        <PhoneFrame>
-          <div className="min-h-full bg-background pb-8">
-            <div className="relative z-30 flex items-center justify-between px-5 pt-[58px] pb-3 h-[114px]">
-              <button className="w-9 h-9 flex items-center justify-center text-foreground/90" aria-label="Volver">
-                <ChevronLeft size={22} strokeWidth={2.25} />
-              </button>
-              <span
-                className="font-condensed text-[13px] uppercase text-muted-foreground"
-                style={{ letterSpacing: "0.25em" }}
-              >
-                CV Deportivo
-              </span>
-              <div className="flex items-center gap-1">
-                <button className="w-9 h-9 flex items-center justify-center text-foreground/90" aria-label="Compartir">
-                  <Share2 size={18} strokeWidth={2} />
-                </button>
-                <button className="w-9 h-9 flex items-center justify-center text-foreground/90" aria-label="Ajustes">
-                  <Settings size={18} strokeWidth={2} />
-                </button>
-              </div>
-            </div>
-            <ProfileContent />
-          </div>
-        </PhoneFrame>
-      </div>
-    </main>
+    <AppShell subtitle="CV Deportivo">
+      <ProfileContent />
+    </AppShell>
   );
 };
 
