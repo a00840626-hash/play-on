@@ -51,7 +51,7 @@ export const DeviceFrame = ({ children }: DeviceFrameProps) => {
 
   return (
     <div
-      className="fixed inset-0 overflow-hidden flex items-center justify-center"
+      className="fixed inset-0 overflow-hidden items-center justify-center flex flex-col"
       style={{
         background:
           "radial-gradient(ellipse at 50% 30%, hsl(150 60% 8%) 0%, hsl(0 0% 3%) 60%, hsl(0 0% 1%) 100%)",
