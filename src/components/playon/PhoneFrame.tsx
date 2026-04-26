@@ -5,47 +5,53 @@ interface PhoneFrameProps {
 }
 
 /**
- * iPhone 15 Pro mockup frame.
- * Inner screen is 393 × 852, scaled down for typical viewports.
+ * iPhone 17 Pro Max mockup frame.
+ * Inner screen is 440 × 956 (logical points), titanium body with Dynamic Island.
  */
 export const PhoneFrame = ({ children }: PhoneFrameProps) => {
+  // Outer device dimensions (screen + bezels + frame)
+  const OUTER_W = 472;
+  const OUTER_H = 990;
+  const SCREEN_W = 440;
+  const SCREEN_H = 956;
+
   return (
-    <div className="relative" style={{ width: 421, height: 880 }}>
-      {/* Titanium outer frame */}
+    <div className="relative" style={{ width: OUTER_W, height: OUTER_H }}>
+      {/* Titanium outer frame (Pro Max — slightly warmer titanium) */}
       <div
-        className="absolute inset-0 rounded-[60px] device-shadow"
+        className="absolute inset-0 rounded-[68px] device-shadow"
         style={{
           background:
-            "linear-gradient(145deg, #2a2a2c 0%, #4a4a4d 25%, #1a1a1c 50%, #5a5a5d 75%, #2a2a2c 100%)",
+            "linear-gradient(145deg, #2e2d2b 0%, #58544f 22%, #1c1b19 48%, #6a655e 76%, #2e2d2b 100%)",
           padding: 4,
         }}
       >
         {/* Inner bezel */}
         <div
-          className="w-full h-full rounded-[58px]"
+          className="w-full h-full rounded-[66px]"
           style={{
             background: "linear-gradient(145deg, #0a0a0a, #1a1a1a)",
-            padding: 10,
+            padding: 12,
           }}
         >
           {/* Screen */}
           <div
-            className="relative w-full h-full rounded-[50px] overflow-hidden bg-background"
-            style={{ width: 393, height: 852 }}
+            className="relative rounded-[54px] overflow-hidden bg-background mx-auto"
+            style={{ width: SCREEN_W, height: SCREEN_H }}
           >
-            {/* Dynamic Island */}
+            {/* Dynamic Island (slightly larger on Pro Max) */}
             <div
               className="absolute left-1/2 -translate-x-1/2 z-50 rounded-full bg-black"
-              style={{ top: 11, width: 124, height: 36 }}
+              style={{ top: 13, width: 132, height: 38 }}
             >
               <div
                 className="absolute rounded-full"
                 style={{
-                  right: 8,
+                  right: 10,
                   top: "50%",
                   transform: "translateY(-50%)",
-                  width: 8,
-                  height: 8,
+                  width: 9,
+                  height: 9,
                   background:
                     "radial-gradient(circle at 30% 30%, #1a3a5a, #050a14)",
                   boxShadow: "inset 0 0 2px rgba(60,140,255,0.3)",
@@ -54,13 +60,13 @@ export const PhoneFrame = ({ children }: PhoneFrameProps) => {
             </div>
 
             {/* Status bar */}
-            <div className="absolute top-0 left-0 right-0 z-40 flex items-center justify-between px-7 pt-3 pointer-events-none">
-              <span className="font-body font-semibold text-foreground text-[15px] tabular-nums">
+            <div className="absolute top-0 left-0 right-0 z-40 flex items-center justify-between px-8 pt-4 pointer-events-none">
+              <span className="font-body font-semibold text-foreground text-[16px] tabular-nums">
                 9:41
               </span>
               <div className="flex items-center gap-1.5 text-foreground">
                 {/* Signal */}
-                <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor">
+                <svg width="18" height="12" viewBox="0 0 17 11" fill="currentColor">
                   <rect x="0" y="7" width="3" height="4" rx="0.5" />
                   <rect x="4.5" y="5" width="3" height="6" rx="0.5" />
                   <rect x="9" y="2.5" width="3" height="8.5" rx="0.5" />
@@ -73,20 +79,20 @@ export const PhoneFrame = ({ children }: PhoneFrameProps) => {
                   <div
                     className="rounded-[3px] border"
                     style={{
-                      width: 24,
-                      height: 11,
+                      width: 26,
+                      height: 12,
                       borderColor: "currentColor",
                       opacity: 0.55,
                     }}
                   >
                     <div
                       className="m-[1.5px] rounded-[1.5px] bg-current"
-                      style={{ width: 18, height: 6 }}
+                      style={{ width: 20, height: 7 }}
                     />
                   </div>
                   <div
                     className="bg-current rounded-r-sm"
-                    style={{ width: 1.5, height: 4, marginLeft: 1, opacity: 0.55 }}
+                    style={{ width: 1.5, height: 5, marginLeft: 1, opacity: 0.55 }}
                   />
                 </div>
               </div>
@@ -99,17 +105,20 @@ export const PhoneFrame = ({ children }: PhoneFrameProps) => {
 
             {/* Home indicator */}
             <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-40 rounded-full bg-foreground/90"
-              style={{ width: 134, height: 5 }}
+              style={{ width: 144, height: 5 }}
             />
           </div>
         </div>
       </div>
 
-      {/* Side buttons */}
-      <div className="absolute -left-[3px] top-[120px] w-[3px] h-[32px] rounded-l-sm bg-[#2a2a2c]" />
-      <div className="absolute -left-[3px] top-[180px] w-[3px] h-[60px] rounded-l-sm bg-[#3a3a3c]" />
-      <div className="absolute -left-[3px] top-[260px] w-[3px] h-[60px] rounded-l-sm bg-[#3a3a3c]" />
-      <div className="absolute -right-[3px] top-[200px] w-[3px] h-[100px] rounded-r-sm bg-[#3a3a3c]" />
+      {/* Side buttons — iPhone 17 Pro Max layout (Action btn + Volume / Power + Camera Control) */}
+      {/* Left side */}
+      <div className="absolute -left-[3px] top-[130px] w-[3px] h-[34px] rounded-l-sm bg-[#2a2a2c]" />
+      <div className="absolute -left-[3px] top-[200px] w-[3px] h-[68px] rounded-l-sm bg-[#3a3a3c]" />
+      <div className="absolute -left-[3px] top-[290px] w-[3px] h-[68px] rounded-l-sm bg-[#3a3a3c]" />
+      {/* Right side: power + camera control */}
+      <div className="absolute -right-[3px] top-[230px] w-[3px] h-[110px] rounded-r-sm bg-[#3a3a3c]" />
+      <div className="absolute -right-[3px] top-[380px] w-[3px] h-[44px] rounded-r-sm bg-[#3a3a3c]" />
     </div>
   );
 };
