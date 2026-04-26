@@ -12,9 +12,9 @@ export const AppShell = ({
   hideNav?: boolean;
 }) => {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-full bg-background text-foreground flex flex-col">
       <TopBar subtitle={subtitle} />
-      <main className="mx-auto max-w-screen-md pb-32">{children}</main>
+      <main className="flex-1 mx-auto w-full max-w-screen-md">{children}</main>
       {!hideNav && <BottomNav />}
     </div>
   );
