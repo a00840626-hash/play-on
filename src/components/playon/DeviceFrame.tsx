@@ -7,16 +7,18 @@ interface DeviceFrameProps {
 /**
  * Full-app iPhone 17 Pro Max device frame.
  * - Logical screen: 440 × 956 pt (6.9" display)
- * - Physical reference: 1320 × 2868 px @ 3x
- * - Titanium bezel, Dynamic Island, Camera Control button
- * - Auto-scales to fit any viewport while preserving aspect ratio.
+ * - Natural titanium body, thin uniform black bezel, Dynamic Island,
+ *   side hardware (Action button, Volume, Power, Camera Control),
+ *   and a true-to-iOS home indicator pill.
  *
- * On very small viewports (typical phones in the wild) the frame is hidden
- * and content renders fullscreen so the app stays usable on real devices.
+ * The frame auto-scales to any viewport. On real phone-sized viewports
+ * (<600px) it disappears so the app fills the screen.
  */
 export const DeviceFrame = ({ children }: DeviceFrameProps) => {
-  const OUTER_W = 472;
-  const OUTER_H = 990;
+  // Outer device dimensions (titanium edge included)
+  const OUTER_W = 462;
+  const OUTER_H = 978;
+  // Inner display in logical points
   const SCREEN_W = 440;
   const SCREEN_H = 956;
 
@@ -27,7 +29,6 @@ export const DeviceFrame = ({ children }: DeviceFrameProps) => {
     const recompute = () => {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
-      // On real phone-sized viewports, skip the frame so the app fills the screen.
       const phoneSized = vw < 600;
       setShowFrame(!phoneSized);
       if (!phoneSized) {
@@ -63,39 +64,39 @@ export const DeviceFrame = ({ children }: DeviceFrameProps) => {
         }}
       >
         <div className="relative" style={{ width: OUTER_W, height: OUTER_H }}>
-          {/* Titanium outer frame */}
+          {/* Titanium outer rail (natural titanium, brushed) */}
           <div
-            className="absolute inset-0 rounded-[68px] device-shadow"
+            className="absolute inset-0 rounded-[60px]"
             style={{
               background:
-                "linear-gradient(145deg, #2e2d2b 0%, #58544f 22%, #1c1b19 48%, #6a655e 76%, #2e2d2b 100%)",
-              padding: 4,
+                "linear-gradient(135deg, #5a5550 0%, #8a847a 12%, #4a4641 28%, #9a9388 44%, #3e3a36 60%, #807a70 78%, #4a4540 100%)",
+              padding: 2,
               boxShadow:
-                "0 50px 120px -20px rgba(0,0,0,0.8), 0 20px 40px -10px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.05)",
+                "0 60px 140px -30px rgba(0,0,0,0.85), 0 25px 50px -15px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.08), inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(0,0,0,0.4)",
             }}
           >
-            {/* Inner bezel */}
+            {/* Thin uniform black bezel (matches real iPhone — same on all sides) */}
             <div
-              className="w-full h-full rounded-[66px]"
+              className="w-full h-full rounded-[58px]"
               style={{
-                background: "linear-gradient(145deg, #0a0a0a, #1a1a1a)",
-                padding: 12,
+                background: "#000",
+                padding: 9,
               }}
             >
               {/* Screen */}
               <div
-                className="relative rounded-[54px] overflow-hidden bg-background mx-auto"
+                className="relative rounded-[50px] overflow-hidden bg-background mx-auto"
                 style={{ width: SCREEN_W, height: SCREEN_H }}
               >
                 {/* Dynamic Island */}
                 <div
                   className="absolute left-1/2 -translate-x-1/2 z-50 rounded-full bg-black"
-                  style={{ top: 13, width: 132, height: 38 }}
+                  style={{ top: 13, width: 126, height: 37 }}
                 >
                   <div
                     className="absolute rounded-full"
                     style={{
-                      right: 10,
+                      right: 11,
                       top: "50%",
                       transform: "translateY(-50%)",
                       width: 9,
@@ -148,10 +149,20 @@ export const DeviceFrame = ({ children }: DeviceFrameProps) => {
                   {children}
                 </div>
 
-                {/* Home indicator */}
+                {/* Bottom safe area — keeps app UI clear of the home indicator */}
                 <div
-                  className="absolute bottom-2 left-1/2 -translate-x-1/2 z-40 rounded-full bg-foreground/90"
-                  style={{ width: 144, height: 5 }}
+                  className="absolute bottom-0 left-0 right-0 z-40 pointer-events-none"
+                  style={{
+                    height: 34,
+                    background:
+                      "linear-gradient(to top, hsl(var(--background)) 40%, hsl(var(--background) / 0) 100%)",
+                  }}
+                />
+
+                {/* Home indicator — true iOS pill */}
+                <div
+                  className="absolute left-1/2 -translate-x-1/2 z-50 rounded-full bg-foreground"
+                  style={{ bottom: 8, width: 134, height: 5, opacity: 0.92 }}
                 />
               </div>
             </div>
@@ -159,12 +170,27 @@ export const DeviceFrame = ({ children }: DeviceFrameProps) => {
 
           {/* Side hardware buttons — iPhone 17 Pro Max */}
           {/* Left: Action button + Volume Up + Volume Down */}
-          <div className="absolute -left-[3px] top-[130px] w-[3px] h-[34px] rounded-l-sm bg-[#2a2a2c]" />
-          <div className="absolute -left-[3px] top-[200px] w-[3px] h-[68px] rounded-l-sm bg-[#3a3a3c]" />
-          <div className="absolute -left-[3px] top-[290px] w-[3px] h-[68px] rounded-l-sm bg-[#3a3a3c]" />
+          <div
+            className="absolute -left-[2px] top-[128px] w-[2px] h-[32px] rounded-l-sm"
+            style={{ background: "linear-gradient(to right, #2a2826, #4a4641)" }}
+          />
+          <div
+            className="absolute -left-[2px] top-[200px] w-[2px] h-[66px] rounded-l-sm"
+            style={{ background: "linear-gradient(to right, #2a2826, #4a4641)" }}
+          />
+          <div
+            className="absolute -left-[2px] top-[290px] w-[2px] h-[66px] rounded-l-sm"
+            style={{ background: "linear-gradient(to right, #2a2826, #4a4641)" }}
+          />
           {/* Right: Power + Camera Control */}
-          <div className="absolute -right-[3px] top-[230px] w-[3px] h-[110px] rounded-r-sm bg-[#3a3a3c]" />
-          <div className="absolute -right-[3px] top-[380px] w-[3px] h-[44px] rounded-r-sm bg-[#3a3a3c]" />
+          <div
+            className="absolute -right-[2px] top-[230px] w-[2px] h-[110px] rounded-r-sm"
+            style={{ background: "linear-gradient(to left, #2a2826, #4a4641)" }}
+          />
+          <div
+            className="absolute -right-[2px] top-[388px] w-[2px] h-[42px] rounded-r-sm"
+            style={{ background: "linear-gradient(to left, #2a2826, #4a4641)" }}
+          />
         </div>
       </div>
     </div>

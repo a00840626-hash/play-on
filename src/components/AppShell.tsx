@@ -14,7 +14,7 @@ export const AppShell = ({
   return (
     <div className="min-h-screen bg-background text-foreground">
       <TopBar subtitle={subtitle} />
-      <main className="mx-auto max-w-screen-md pb-28">{children}</main>
+      <main className="mx-auto max-w-screen-md pb-32">{children}</main>
       {!hideNav && <BottomNav />}
     </div>
   );
