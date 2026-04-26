@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Settings, LogOut, Check, ArrowUpRight, Share, BarChart3, ChevronRight, type LucideIcon } from "lucide-react";
-import { PhoneFrame } from "@/components/playon/PhoneFrame";
+import { AppShell } from "@/components/AppShell";
 
 import { RankingChart } from "@/components/playon/RankingChart";
 import { SportCard } from "@/components/playon/SportCard";
@@ -8,24 +8,9 @@ import { Heatmap } from "@/components/playon/Heatmap";
 
 const Profile = () => {
   return (
-    <div
-      className="fixed inset-0 overflow-hidden flex items-center justify-center bg-background"
-      style={{
-        backgroundImage:
-          "radial-gradient(ellipse at top, hsl(150 60% 8%) 0%, hsl(var(--background)) 60%)",
-      }}
-    >
-      <div
-        style={{
-          transform: "scale(min(calc((100vh - 32px) / 880), calc((100vw - 32px) / 421)))",
-          transformOrigin: "center center",
-        }}
-      >
-        <PhoneFrame>
-          <ProfileContent />
-        </PhoneFrame>
-      </div>
-    </div>
+    <AppShell subtitle="PERFIL">
+      <ProfileContent />
+    </AppShell>
   );
 };
 
