@@ -69,6 +69,13 @@ const Onboarding = () => {
               <GoogleIcon /> Continuar con Google
             </button>
 
+            <button
+              onClick={() => setStep("userType")}
+              className="w-full h-12 rounded bg-foreground text-background font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:opacity-90 transition"
+            >
+              <AppleIcon /> Continuar con Apple
+            </button>
+
             <div className="flex items-center gap-3 my-4">
               <div className="flex-1 h-px bg-border" />
               <span className="text-[10px] uppercase tracking-widest font-mono text-muted-foreground">
