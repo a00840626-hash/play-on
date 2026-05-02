@@ -105,6 +105,13 @@ const Onboarding = () => {
               Al continuar aceptas los <span className="text-foreground">Términos</span> y la{" "}
               <span className="text-foreground">Política de privacidad</span>.
             </p>
+
+            <p className="text-sm text-muted-foreground text-center pt-4">
+              ¿Ya tienes cuenta?{" "}
+              <a href="/login" className="text-primary font-bold hover:text-glow">
+                Inicia sesión
+              </a>
+            </p>
           </div>
         </StepShell>
       )}
