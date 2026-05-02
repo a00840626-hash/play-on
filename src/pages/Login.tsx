@@ -11,6 +11,12 @@ const GoogleIcon = () => (
   </svg>
 );
 
+const AppleIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M16.365 1.43c0 1.14-.42 2.21-1.13 3.02-.77.88-2.02 1.56-3.05 1.48-.13-1.12.42-2.28 1.1-3.04.78-.86 2.13-1.51 3.08-1.46zM20.5 17.4c-.55 1.27-.82 1.84-1.53 2.96-.99 1.56-2.39 3.5-4.12 3.51-1.54.02-1.94-1-4.03-1-2.09.01-2.53 1.02-4.07 1-1.73-.02-3.05-1.77-4.04-3.33C.04 16.13-.21 11.07 1.96 8.4c1.54-1.9 3.97-3.01 6.25-3.01 2.32 0 3.78 1.27 5.7 1.27 1.86 0 3-1.27 5.68-1.27 2.03 0 4.18 1.11 5.71 3.02-5.02 2.75-4.21 9.93-.8 9z"/>
+  </svg>
+);
+
 const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -56,6 +62,14 @@ const Login = () => {
           className="w-full h-12 rounded bg-foreground text-background font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:opacity-90 transition"
         >
           <GoogleIcon /> Entrar con Google
+        </button>
+
+        <button
+          type="button"
+          onClick={submit as never}
+          className="w-full h-12 rounded bg-foreground text-background font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:opacity-90 transition"
+        >
+          <AppleIcon /> Entrar con Apple
         </button>
 
         <div className="flex items-center gap-3 my-4">
