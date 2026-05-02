@@ -14,6 +14,11 @@ const Profile = () => {
 };
 
 const ProfileContent = () => {
+  const navigate = useNavigate();
+  const resetOnboarding = () => {
+    try { localStorage.removeItem("playon:onboarding"); } catch {}
+    navigate("/onboarding");
+  };
   return (
     <>
       {/* Hero profile card */}
