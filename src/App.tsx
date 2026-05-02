@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import Onboarding from "./pages/Onboarding";
 import Courts from "./pages/Courts";
 import CourtDetail from "./pages/CourtDetail";
 import Matches from "./pages/Matches";
@@ -26,6 +27,7 @@ const App = () => (
         <DeviceFrame>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/courts" element={<Courts />} />
             <Route path="/courts/:id" element={<CourtDetail />} />
             <Route path="/matches" element={<Matches />} />
