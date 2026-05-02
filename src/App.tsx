@@ -1,11 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import Index from "./pages/Index.tsx";
-import NotFound from "./pages/NotFound.tsx";
+import Home from "./pages/Home";
 import Onboarding from "./pages/Onboarding";
+import NotFound from "./pages/NotFound.tsx";
 import Courts from "./pages/Courts";
 import CourtDetail from "./pages/CourtDetail";
 import Matches from "./pages/Matches";
@@ -18,6 +18,11 @@ import { DeviceFrame } from "./components/playon/DeviceFrame";
 
 const queryClient = new QueryClient();
 
+const Root = () => {
+  const done = typeof window !== "undefined" && localStorage.getItem("playon:onboarding");
+  return done ? <Home /> : <Navigate to="/onboarding" replace />;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -26,7 +31,7 @@ const App = () => (
       <BrowserRouter>
         <DeviceFrame>
           <Routes>
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={<Root />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/courts" element={<Courts />} />
             <Route path="/courts/:id" element={<CourtDetail />} />
@@ -36,7 +41,6 @@ const App = () => (
             <Route path="/community" element={<Community />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/owner" element={<OwnerDashboard />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </DeviceFrame>
