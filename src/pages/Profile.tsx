@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom";
-import { Settings, LogOut, Check, ArrowUpRight, Share, BarChart3, ChevronRight, type LucideIcon } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Settings, LogOut, Check, ArrowUpRight, Share, BarChart3, ChevronRight, RotateCcw, type LucideIcon } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { RankingChart } from "@/components/playon/RankingChart";
 import { SportCard } from "@/components/playon/SportCard";
@@ -14,6 +14,11 @@ const Profile = () => {
 };
 
 const ProfileContent = () => {
+  const navigate = useNavigate();
+  const resetOnboarding = () => {
+    try { localStorage.removeItem("playon:onboarding"); } catch {}
+    navigate("/onboarding");
+  };
   return (
     <>
       {/* Hero profile card */}
@@ -416,6 +421,7 @@ const ProfileContent = () => {
       {/* Settings */}
       <section className="px-4 mt-5 mb-8 space-y-2">
         <SettingsRow icon={Settings} label="Configuración" />
+        <SettingsRow icon={RotateCcw} label="Reset onboarding (debug)" onClick={resetOnboarding} />
         <SettingsRow icon={LogOut} label="Cerrar sesión" danger />
       </section>
     </>
@@ -426,13 +432,16 @@ const SettingsRow = ({
   icon: Icon,
   label,
   danger,
+  onClick,
 }: {
   icon: LucideIcon;
   label: string;
   danger?: boolean;
+  onClick?: () => void;
 }) => (
   <button
     type="button"
+    onClick={onClick}
     className={`w-full flex items-center justify-between rounded border border-border bg-card p-3 hover:border-foreground/40 transition-colors ${
       danger ? "text-accent" : ""
     }`}
