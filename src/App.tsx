@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Home from "./pages/Home";
 import Onboarding from "./pages/Onboarding";
+import Login from "./pages/Login";
 import NotFound from "./pages/NotFound.tsx";
 import Courts from "./pages/Courts";
 import CourtDetail from "./pages/CourtDetail";
@@ -33,6 +34,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Root />} />
             <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/login" element={<Login />} />
             <Route path="/courts" element={<Courts />} />
             <Route path="/courts/:id" element={<CourtDetail />} />
             <Route path="/matches" element={<Matches />} />
