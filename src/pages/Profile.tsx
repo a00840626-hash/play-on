@@ -421,6 +421,7 @@ const ProfileContent = () => {
       {/* Settings */}
       <section className="px-4 mt-5 mb-8 space-y-2">
         <SettingsRow icon={Settings} label="Configuración" />
+        <SettingsRow icon={RotateCcw} label="Reset onboarding (debug)" onClick={resetOnboarding} />
         <SettingsRow icon={LogOut} label="Cerrar sesión" danger />
       </section>
     </>
