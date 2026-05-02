@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowRight, Check, MapPin, Mail, ShieldCheck, Trophy, User as UserIcon, Building2 } from "lucide-react";
 
 type Step = "splash" | "auth" | "userType" | "sports" | "skill" | "location" | "welcome";
-type Sport = "futbol" | "tenis" | "padel";
+type Sport = "futbol" | "tenis" | "padel" | "running" | "voleibol" | "basket" | "tocho" | "americano";
 type Skill = "principiante" | "intermedio" | "avanzado";
 type UserType = "player" | "owner";
 
@@ -11,6 +11,11 @@ const sportsList: { id: Sport; label: string; emoji: string }[] = [
   { id: "futbol", label: "Fútbol", emoji: "⚽" },
   { id: "tenis", label: "Tenis", emoji: "🎾" },
   { id: "padel", label: "Pádel", emoji: "🏓" },
+  { id: "basket", label: "Básquet", emoji: "🏀" },
+  { id: "voleibol", label: "Voleibol", emoji: "🏐" },
+  { id: "running", label: "Running", emoji: "🏃" },
+  { id: "tocho", label: "Tocho", emoji: "🏉" },
+  { id: "americano", label: "Fut. Americano", emoji: "🏈" },
 ];
 
 const skillList: { id: Skill; label: string; desc: string }[] = [
