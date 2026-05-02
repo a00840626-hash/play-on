@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom";
-import { Settings, LogOut, Check, ArrowUpRight, Share, BarChart3, ChevronRight, type LucideIcon } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Settings, LogOut, Check, ArrowUpRight, Share, BarChart3, ChevronRight, RotateCcw, type LucideIcon } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { RankingChart } from "@/components/playon/RankingChart";
 import { SportCard } from "@/components/playon/SportCard";
