@@ -3,6 +3,15 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import Onboarding from "./pages/Onboarding";
+import Home from "./pages/Home";
+import { Navigate } from "react-router-dom";
+
+const Root = () => {
+  const done = typeof window !== "undefined" && localStorage.getItem("playon:onboarding");
+  return done ? <Home /> : <Navigate to="/onboarding" replace />;
+};
+
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import Onboarding from "./pages/Onboarding";
