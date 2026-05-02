@@ -432,13 +432,16 @@ const SettingsRow = ({
   icon: Icon,
   label,
   danger,
+  onClick,
 }: {
   icon: LucideIcon;
   label: string;
   danger?: boolean;
+  onClick?: () => void;
 }) => (
   <button
     type="button"
+    onClick={onClick}
     className={`w-full flex items-center justify-between rounded border border-border bg-card p-3 hover:border-foreground/40 transition-colors ${
       danger ? "text-accent" : ""
     }`}
