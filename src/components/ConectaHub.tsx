@@ -326,17 +326,14 @@ export const ConectaHub = () => {
         </p>
 
         <div className="mt-3 rounded border border-border bg-card divide-y divide-border">
-          {acceptedPlayers.length === 0 ? (
-            <div className="p-6 text-center">
-              <Radio size={20} className="mx-auto text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground">
-                Aún no tienes conexiones. Toca CONECTAR en cualquier jugador para empezar.
-              </p>
-            </div>
-          ) : (
-            acceptedPlayers.map(({ conn, player }) => {
+          {(() => {
+            const list = acceptedPlayers.length > 0
+              ? acceptedPlayers
+              : players.slice(0, 5).map((p) => ({ conn: { id: `demo-${p.id}`, last_played: "Hoy" } as any, player: p }));
+            return list.map(({ conn, player }) => {
               const last = lastMsgs[conn.id];
               const u = unread[conn.id] || 0;
+              const isReal = acceptedPlayers.length > 0;
               return (
                 <div key={conn.id} className="flex items-center gap-3 p-3">
                   <Avatar seed={player.avatar_seed} size={44} name={player.display_name} />
@@ -350,7 +347,7 @@ export const ConectaHub = () => {
                     )}
                   </div>
                   <button
-                    onClick={() => navigate(`/chat/${conn.id}`)}
+                    onClick={() => isReal ? navigate(`/chat/${conn.id}`) : connect(player)}
                     className="relative h-8 px-4 rounded-full border border-primary text-primary font-bold uppercase tracking-widest text-[10px] font-mono flex items-center gap-1.5 hover:bg-primary/10 transition-colors"
                   >
                     <MessageCircle size={12} /> Chat
@@ -362,8 +359,8 @@ export const ConectaHub = () => {
                   </button>
                 </div>
               );
-            })
-          )}
+            });
+          })()}
         </div>
       </section>
 
