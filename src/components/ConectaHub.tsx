@@ -396,18 +396,6 @@ export const ConectaHub = () => {
             })
           )}
         </div>
-                  {u > 0 ? (
-                    <span className="h-5 min-w-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold font-mono flex items-center justify-center glow-green">
-                      {u}
-                    </span>
-                  ) : (
-                    <ArrowRight size={14} className="text-muted-foreground" />
-                  )}
-                </button>
-              );
-            })
-          )}
-        </div>
       </section>
 
       <AlertDialog open={!!confirmPlayer} onOpenChange={(o) => !o && setConfirmPlayer(null)}>
