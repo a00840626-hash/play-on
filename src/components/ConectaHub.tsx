@@ -180,72 +180,101 @@ export const ConectaHub = () => {
           <button className="text-[10px] uppercase tracking-widest font-mono text-primary hover:text-glow">Ver todos →</button>
         </div>
         <p className="px-4 mt-1 text-[10px] uppercase tracking-widest text-muted-foreground font-mono">
-          // Mismo deporte · misma colonia · mismo nivel
+          // Misma colonia · mismo deporte · mismo nivel
         </p>
 
-        <div className="mt-4 grid grid-cols-2 gap-3 px-4">
-          {players.map((p) => {
-            const conn = connByPlayer[p.id];
-            const status = conn?.status;
+        {/* Sport filter chips */}
+        <div className="mt-3 px-4 flex gap-2 overflow-x-auto no-scrollbar">
+          {sportOptions.map((s) => {
+            const active = sportFilter === s;
             return (
-              <div
-                key={p.id}
-                className="rounded-md border border-border bg-card p-4 hover:border-primary transition-colors"
+              <button
+                key={s}
+                onClick={() => setSportFilter(s)}
+                className={`flex-shrink-0 h-7 px-3 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono border transition-colors ${
+                  active
+                    ? "bg-primary text-primary-foreground border-primary glow-green"
+                    : "border-border text-muted-foreground hover:text-foreground"
+                }`}
               >
-                <div className="flex flex-col items-center text-center">
-                  <div className="relative">
-                    <Avatar seed={p.avatar_seed} size={56} />
-                    {p.online && <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-primary border-2 border-card glow-green" />}
-                  </div>
-                  <h3 className="font-display text-lg leading-none mt-2">{p.display_name}</h3>
-                  <p className="text-[11px] text-muted-foreground mt-0.5 truncate w-full">
-                    {p.colonia} · {p.distance_km} km
-                  </p>
-                  <div className="flex gap-1 mt-2 flex-wrap justify-center">
-                    {p.sports.slice(0, 2).map((s) => (
-                      <span
-                        key={s}
-                        className="px-1.5 py-0.5 rounded-sm text-[9px] font-bold uppercase tracking-widest font-mono border"
-                        style={{ color: sportColors[s] || "#fff", borderColor: `${sportColors[s] || "#fff"}55` }}
-                      >
-                        {s}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="flex items-center gap-1 mt-2 text-xs font-mono">
-                    <Star size={12} className="text-primary fill-primary" />
-                    <span>{p.rating.toFixed(1)}</span>
-                  </div>
-                </div>
-
-                <div className="mt-3 space-y-1.5">
-                  {status === "accepted" ? (
-                    <button
-                      onClick={() => navigate(`/chat/${conn!.id}`)}
-                      className="w-full h-8 rounded-sm border border-primary text-primary font-bold uppercase tracking-widest text-[10px] font-mono flex items-center justify-center gap-1 hover:bg-primary/10"
-                    >
-                      <MessageCircle size={12} /> Chatear →
-                    </button>
-                  ) : status === "pending" ? (
-                    <button disabled className="w-full h-8 rounded-sm bg-secondary text-muted-foreground font-bold uppercase tracking-widest text-[10px] font-mono flex items-center justify-center gap-1 cursor-not-allowed">
-                      <Check size={12} /> Solicitud enviada
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => connect(p)}
-                      className="w-full h-8 rounded-sm bg-primary text-primary-foreground font-bold uppercase tracking-widest text-[10px] font-mono glow-green hover:brightness-110"
-                    >
-                      Conectar
-                    </button>
-                  )}
-                  <button className="w-full h-8 rounded-sm border border-border text-muted-foreground hover:text-foreground hover:border-primary/40 font-bold uppercase tracking-widest text-[10px] font-mono">
-                    Ver perfil
-                  </button>
-                </div>
-              </div>
+                {s}
+              </button>
             );
           })}
         </div>
+
+        {filtered.length === 0 ? (
+          <div className="mx-4 mt-4 rounded-md border border-dashed border-border p-6 text-center">
+            <Search size={20} className="mx-auto text-muted-foreground mb-2" />
+            <p className="text-xs text-muted-foreground">
+              No hay jugadores cerca con tu deporte y nivel. Prueba expandiendo tu búsqueda.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-4 grid grid-cols-2 gap-3 px-4">
+            {filtered.map((p) => {
+              const conn = connByPlayer[p.id];
+              const status = conn?.status;
+              return (
+                <div
+                  key={p.id}
+                  className="rounded-md border border-border bg-card p-4 hover:border-primary transition-colors"
+                >
+                  <div className="flex flex-col items-center text-center">
+                    <div className="relative">
+                      <Avatar seed={p.avatar_seed} size={56} />
+                      {p.online && <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-primary border-2 border-card glow-green" />}
+                    </div>
+                    <h3 className="font-display text-lg leading-none mt-2">{p.display_name}</h3>
+                    <p className="text-[11px] text-muted-foreground mt-0.5 truncate w-full">
+                      {p.colonia} · {p.distance_km} km
+                    </p>
+                    <div className="flex gap-1 mt-2 flex-wrap justify-center">
+                      {p.sports.slice(0, 2).map((s) => (
+                        <span
+                          key={s}
+                          className="px-1.5 py-0.5 rounded-sm text-[9px] font-bold uppercase tracking-widest font-mono border"
+                          style={{ color: sportColors[s] || "#fff", borderColor: `${sportColors[s] || "#fff"}55` }}
+                        >
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-1 mt-2 text-xs font-mono">
+                      <Star size={12} className="text-primary fill-primary" />
+                      <span>{p.rating.toFixed(1)}</span>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 space-y-1.5">
+                    {status === "accepted" ? (
+                      <button
+                        onClick={() => navigate(`/chat/${conn!.id}`)}
+                        className="w-full h-8 rounded-full border border-primary text-primary font-bold uppercase tracking-widest text-[10px] font-mono flex items-center justify-center gap-1 hover:bg-primary/10 transition-all duration-200"
+                      >
+                        <MessageCircle size={12} /> Chatear →
+                      </button>
+                    ) : status === "pending" ? (
+                      <button disabled className="w-full h-8 rounded-full bg-secondary text-muted-foreground font-bold uppercase tracking-widest text-[10px] font-mono flex items-center justify-center gap-1 cursor-not-allowed transition-all duration-200">
+                        <Check size={12} /> Solicitud enviada
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => connect(p)}
+                        className="w-full h-8 rounded-full bg-primary text-primary-foreground font-bold uppercase tracking-widest text-[10px] font-mono glow-green hover:brightness-110 flex items-center justify-center gap-1 transition-all duration-200"
+                      >
+                        <Zap size={12} className="fill-primary-foreground" /> Conectar
+                      </button>
+                    )}
+                    <button className="w-full h-8 rounded-full border border-border text-foreground hover:border-primary/40 font-bold uppercase tracking-widest text-[10px] font-mono flex items-center justify-center gap-1">
+                      Ver perfil <ArrowRight size={11} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       {/* Section B: Badges */}
