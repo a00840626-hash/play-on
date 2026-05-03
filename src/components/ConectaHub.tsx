@@ -318,8 +318,11 @@ export const ConectaHub = () => {
 
         <div className="mt-3 rounded border border-border bg-card divide-y divide-border">
           {acceptedPlayers.length === 0 ? (
-            <div className="p-5 text-center text-sm text-muted-foreground">
-              Aún no tienes conexiones. Conecta con alguien arriba ↑
+            <div className="p-6 text-center">
+              <Radio size={20} className="mx-auto text-muted-foreground mb-2" />
+              <p className="text-sm text-muted-foreground">
+                Aún no tienes conexiones. Toca CONECTAR en cualquier jugador para empezar.
+              </p>
             </div>
           ) : (
             acceptedPlayers.map(({ conn, player }) => {
@@ -331,17 +334,22 @@ export const ConectaHub = () => {
                   onClick={() => navigate(`/chat/${conn.id}`)}
                   className="w-full flex items-center gap-3 p-3 hover:bg-secondary/30 transition-colors text-left"
                 >
-                  <Avatar seed={player.avatar_seed} size={44} />
+                  <Avatar seed={player.avatar_seed} size={40} />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold truncate">{player.display_name}</p>
                     <p className="text-[11px] text-muted-foreground truncate">
-                      {last ? last.body : `Jugaron juntos: ${conn.last_played || "—"}`}
+                      Última vez juntos: {conn.last_played || "—"}
                     </p>
+                    {last && (
+                      <p className="text-[12px] text-muted-foreground truncate mt-0.5">{last.body}</p>
+                    )}
                   </div>
-                  {u > 0 && (
+                  {u > 0 ? (
                     <span className="h-5 min-w-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold font-mono flex items-center justify-center glow-green">
                       {u}
                     </span>
+                  ) : (
+                    <ArrowRight size={14} className="text-muted-foreground" />
                   )}
                 </button>
               );
@@ -349,6 +357,25 @@ export const ConectaHub = () => {
           )}
         </div>
       </section>
+
+      <AlertDialog open={!!confirmPlayer} onOpenChange={(o) => !o && setConfirmPlayer(null)}>
+        <AlertDialogContent className="bg-card border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-display text-2xl">
+              CONECTAR CON {confirmPlayer?.display_name?.toUpperCase()}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Le enviaremos una solicitud para conectar contigo.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={sendRequest} className="bg-primary text-primary-foreground hover:bg-primary/90">
+              Enviar solicitud
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
