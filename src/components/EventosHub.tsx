@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, List, Map as MapIcon, X } from "lucide-react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -45,21 +45,27 @@ export const EventosHub = () => {
 
   return (
     <div className="px-4 mt-5">
-      {/* View toggle */}
-      <div className="flex gap-1 p-1 rounded-full border border-border bg-card">
-        {(["calendario", "lista", "mapa"] as View[]).map((v) => {
-          const active = view === v;
+      {/* View switcher: minimal icon row, sits under the parent Eventos pill */}
+      <div className="flex items-center gap-5 border-b border-border pb-2">
+        {([
+          { id: "calendario", label: "Calendario", Icon: CalendarDays },
+          { id: "lista", label: "Lista", Icon: List },
+          { id: "mapa", label: "Mapa", Icon: MapIcon },
+        ] as { id: View; label: string; Icon: typeof List }[]).map(({ id, label, Icon }) => {
+          const active = view === id;
           return (
             <button
-              key={v}
-              onClick={() => setView(v)}
-              className={`flex-1 h-9 rounded-full text-[11px] font-bold uppercase tracking-widest font-mono transition-all ${
-                active
-                  ? "bg-primary text-primary-foreground glow-green"
-                  : "text-muted-foreground hover:text-foreground"
+              key={id}
+              onClick={() => setView(id)}
+              className={`relative flex items-center gap-1.5 pb-2 text-[11px] font-bold uppercase tracking-widest font-mono transition-colors ${
+                active ? "text-primary" : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              {v}
+              <Icon size={14} />
+              {label}
+              {active && (
+                <span className="absolute -bottom-[9px] left-0 right-0 h-[2px] bg-primary glow-green" />
+              )}
             </button>
           );
         })}
