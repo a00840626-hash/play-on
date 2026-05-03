@@ -67,6 +67,7 @@ export const ConectaHub = () => {
   const [unread, setUnread] = useState<Record<string, number>>({});
   const [sportFilter, setSportFilter] = useState<string>("todos");
   const [confirmPlayer, setConfirmPlayer] = useState<DemoPlayer | null>(null);
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     if (!user) return;
