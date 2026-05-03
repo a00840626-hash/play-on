@@ -47,13 +47,13 @@ const sportColors: Record<string, string> = {
   americano: "#A87544",
 };
 
-const Avatar = ({ seed, size = 56 }: { seed: string; size?: number }) => (
+const Avatar = ({ seed, size = 72 }: { seed: string; size?: number }) => (
   <img
-    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}&backgroundColor=141414`}
+    src={`https://i.pravatar.cc/200?u=${encodeURIComponent(seed)}`}
     alt={seed}
     width={size}
     height={size}
-    className="rounded-full bg-secondary"
+    className="rounded-full bg-secondary object-cover"
     style={{ width: size, height: size }}
   />
 );
