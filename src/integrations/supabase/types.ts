@@ -14,16 +14,173 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      badges: {
+        Row: {
+          badge_key: string
+          earned_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_key: string
+          earned_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_key?: string
+          earned_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "badges_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      connections: {
+        Row: {
+          created_at: string
+          id: string
+          requested_by: string
+          status: Database["public"]["Enums"]["connection_status"]
+          updated_at: string
+          user_a: string
+          user_b: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          requested_by: string
+          status?: Database["public"]["Enums"]["connection_status"]
+          updated_at?: string
+          user_a: string
+          user_b: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          requested_by?: string
+          status?: Database["public"]["Enums"]["connection_status"]
+          updated_at?: string
+          user_a?: string
+          user_b?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "connections_user_a_fkey"
+            columns: ["user_a"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "connections_user_b_fkey"
+            columns: ["user_b"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          body: string
+          connection_id: string
+          id: string
+          read_at: string | null
+          sender_id: string
+          sent_at: string
+        }
+        Insert: {
+          body: string
+          connection_id: string
+          id?: string
+          read_at?: string | null
+          sender_id: string
+          sent_at?: string
+        }
+        Update: {
+          body?: string
+          connection_id?: string
+          id?: string
+          read_at?: string | null
+          sender_id?: string
+          sent_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          colonia: string | null
+          created_at: string
+          display_name: string
+          distance_km: number | null
+          id: string
+          online: boolean | null
+          rating: number | null
+          sports: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          colonia?: string | null
+          created_at?: string
+          display_name?: string
+          distance_km?: number | null
+          id: string
+          online?: boolean | null
+          rating?: number | null
+          sports?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          colonia?: string | null
+          created_at?: string
+          display_name?: string
+          distance_km?: number | null
+          id?: string
+          online?: boolean | null
+          rating?: number | null
+          sports?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_connection_participant: {
+        Args: { _conn: string; _user: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      connection_status: "pending" | "accepted" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +307,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      connection_status: ["pending", "accepted", "rejected"],
+    },
   },
 } as const
