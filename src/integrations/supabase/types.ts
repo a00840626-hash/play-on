@@ -88,6 +88,118 @@ export type Database = {
           },
         ]
       }
+      demo_connections: {
+        Row: {
+          created_at: string
+          demo_player_id: string
+          id: string
+          last_played: string | null
+          status: Database["public"]["Enums"]["demo_conn_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          demo_player_id: string
+          id?: string
+          last_played?: string | null
+          status?: Database["public"]["Enums"]["demo_conn_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          demo_player_id?: string
+          id?: string
+          last_played?: string | null
+          status?: Database["public"]["Enums"]["demo_conn_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demo_connections_demo_player_id_fkey"
+            columns: ["demo_player_id"]
+            isOneToOne: false
+            referencedRelation: "demo_players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      demo_messages: {
+        Row: {
+          body: string
+          connection_id: string
+          id: string
+          read_at: string | null
+          sender: string
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          connection_id: string
+          id?: string
+          read_at?: string | null
+          sender: string
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          connection_id?: string
+          id?: string
+          read_at?: string | null
+          sender?: string
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demo_messages_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "demo_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      demo_players: {
+        Row: {
+          avatar_seed: string
+          bio: string | null
+          colonia: string
+          display_name: string
+          distance_km: number
+          id: string
+          online: boolean | null
+          rating: number
+          sports: string[]
+        }
+        Insert: {
+          avatar_seed: string
+          bio?: string | null
+          colonia: string
+          display_name: string
+          distance_km: number
+          id?: string
+          online?: boolean | null
+          rating?: number
+          sports?: string[]
+        }
+        Update: {
+          avatar_seed?: string
+          bio?: string | null
+          colonia?: string
+          display_name?: string
+          distance_km?: number
+          id?: string
+          online?: boolean | null
+          rating?: number
+          sports?: string[]
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           body: string
@@ -181,6 +293,7 @@ export type Database = {
     }
     Enums: {
       connection_status: "pending" | "accepted" | "rejected"
+      demo_conn_status: "none" | "pending" | "accepted"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -309,6 +422,7 @@ export const Constants = {
   public: {
     Enums: {
       connection_status: ["pending", "accepted", "rejected"],
+      demo_conn_status: ["none", "pending", "accepted"],
     },
   },
 } as const
