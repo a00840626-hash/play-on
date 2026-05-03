@@ -120,6 +120,13 @@ export const ConectaHub = () => {
       return;
     }
     if (existing?.status === "pending") return;
+    setConfirmPlayer(player);
+  };
+
+  const sendRequest = async () => {
+    if (!user || !confirmPlayer) return;
+    const player = confirmPlayer;
+    setConfirmPlayer(null);
 
     const { data, error } = await supabase
       .from("demo_connections")
@@ -132,10 +139,8 @@ export const ConectaHub = () => {
     }
     toast({ title: "Solicitud enviada", description: `${player.display_name} aceptará en unos segundos…` });
 
-    // Auto-accept after delay (demo)
     setTimeout(async () => {
       await supabase.from("demo_connections").update({ status: "accepted", last_played: "Hoy" }).eq("id", data.id);
-      // simulate first message from them
       await supabase.from("demo_messages").insert({
         connection_id: data.id,
         user_id: user.id,
@@ -144,6 +149,9 @@ export const ConectaHub = () => {
       });
     }, 2500);
   };
+
+  const sportOptions = ["todos", "futbol", "tenis", "padel", "running"];
+  const filtered = sportFilter === "todos" ? players : players.filter((p) => p.sports.includes(sportFilter));
 
   const accepted = conns.filter((c) => c.status === "accepted");
   const acceptedPlayers = accepted
