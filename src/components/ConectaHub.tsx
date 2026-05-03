@@ -262,7 +262,7 @@ export const ConectaHub = () => {
                 >
                   <div className="flex flex-col items-center text-center">
                     <div className="relative">
-                      <Avatar seed={p.avatar_seed} size={56} />
+                      <Avatar seed={p.avatar_seed} size={56} name={p.display_name} />
                       {p.online && <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-primary border-2 border-card glow-green" />}
                     </div>
                     <h3 className="font-display text-lg leading-none mt-2">{p.display_name}</h3>
