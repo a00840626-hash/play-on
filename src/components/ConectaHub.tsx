@@ -67,6 +67,7 @@ export const ConectaHub = () => {
   const [unread, setUnread] = useState<Record<string, number>>({});
   const [sportFilter, setSportFilter] = useState<string>("todos");
   const [confirmPlayer, setConfirmPlayer] = useState<DemoPlayer | null>(null);
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     if (!user) return;
@@ -151,7 +152,10 @@ export const ConectaHub = () => {
   };
 
   const sportOptions = ["todos", "futbol", "tenis", "padel", "running"];
-  const filtered = sportFilter === "todos" ? players : players.filter((p) => p.sports.includes(sportFilter));
+  const q = query.trim().toLowerCase();
+  const filtered = players
+    .filter((p) => sportFilter === "todos" || p.sports.includes(sportFilter))
+    .filter((p) => !q || p.display_name.toLowerCase().includes(q) || p.colonia.toLowerCase().includes(q));
 
   const accepted = conns.filter((c) => c.status === "accepted");
   const acceptedPlayers = accepted
@@ -175,13 +179,25 @@ export const ConectaHub = () => {
     <div className="space-y-8">
       {/* Section A: Players nearby */}
       <section className="mt-6">
-        <div className="px-4 flex items-end justify-between">
-          <h2 className="font-display text-2xl leading-none">JUGADORES CERCA DE TI</h2>
-          <button className="text-[10px] uppercase tracking-widest font-mono text-primary hover:text-glow">Ver todos →</button>
+        <div className="px-4">
+          <h2 className="font-display text-2xl leading-none">JUGADORES</h2>
+          <p className="mt-1 text-[10px] uppercase tracking-widest text-muted-foreground font-mono">
+            // Encuentra a tu próximo rival o compañero
+          </p>
         </div>
-        <p className="px-4 mt-1 text-[10px] uppercase tracking-widest text-muted-foreground font-mono">
-          // Misma colonia · mismo deporte · mismo nivel
-        </p>
+
+        {/* Search */}
+        <div className="mt-3 px-4">
+          <div className="relative">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Buscar jugador o colonia..."
+              className="w-full h-10 pl-9 pr-3 rounded-full bg-card border border-border text-sm focus:outline-none focus:border-primary placeholder:text-muted-foreground"
+            />
+          </div>
+        </div>
 
         {/* Sport filter chips */}
         <div className="mt-3 px-4 flex gap-2 overflow-x-auto no-scrollbar">
