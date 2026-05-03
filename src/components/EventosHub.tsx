@@ -1,17 +1,22 @@
-import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, MapPin } from "lucide-react";
-import { events, EventSport, eventSportLabels, PlayOnEvent } from "@/data/events";
+import { useEffect, useMemo, useState } from "react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import { events, EventSport, eventSportLabels, PlayOnEvent, sportColor, sportEmoji } from "@/data/events";
 import { EventCard } from "./EventCard";
 
 type View = "calendario" | "lista" | "mapa";
-type SportFilter = "all" | EventSport;
 
-const sportFilters: { id: SportFilter; label: string }[] = [
-  { id: "all", label: "Todos" },
-  { id: "futbol", label: "Fútbol" },
-  { id: "tenis", label: "Tenis" },
-  { id: "padel", label: "Pádel" },
-  { id: "running", label: "Running" },
+const allSports: EventSport[] = [
+  "futbol",
+  "tenis",
+  "padel",
+  "running",
+  "basketball",
+  "voleibol",
+  "tocho",
+  "americano",
 ];
 
 const monthLabels = [
@@ -23,14 +28,19 @@ const weekDays = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
 export const EventosHub = () => {
   const [view, setView] = useState<View>("calendario");
-  const [sport, setSport] = useState<SportFilter>("all");
-  const [cursor, setCursor] = useState(new Date(2026, 4, 1)); // May 2026
+  const [selectedSports, setSelectedSports] = useState<Set<EventSport>>(new Set());
+  const [cursor, setCursor] = useState(new Date(2026, 4, 1));
   const [selectedDay, setSelectedDay] = useState<number | null>(4);
-  const [activeEventId, setActiveEventId] = useState<string>(events[0].id);
+
+  const toggleSport = (s: EventSport) => {
+    const next = new Set(selectedSports);
+    next.has(s) ? next.delete(s) : next.add(s);
+    setSelectedSports(next);
+  };
 
   const filtered = useMemo(
-    () => (sport === "all" ? events : events.filter((e) => e.sport === sport)),
-    [sport]
+    () => (selectedSports.size === 0 ? events : events.filter((e) => selectedSports.has(e.sport))),
+    [selectedSports]
   );
 
   return (
@@ -55,25 +65,46 @@ export const EventosHub = () => {
         })}
       </div>
 
-      {/* Sport filters */}
-      <div className="mt-3 flex gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4">
-        {sportFilters.map((f) => {
-          const active = sport === f.id;
-          return (
-            <button
-              key={f.id}
-              onClick={() => setSport(f.id)}
-              className={`flex-shrink-0 h-8 px-3 rounded-sm border text-[10px] font-bold uppercase tracking-widest font-mono transition-all ${
-                active
-                  ? "bg-primary text-primary-foreground border-primary glow-green"
-                  : "bg-card text-muted-foreground border-border hover:text-foreground hover:border-foreground/40"
-              }`}
-            >
-              {f.label}
-            </button>
-          );
-        })}
+      {/* Multi-select sport filters */}
+      <div className="mt-3 flex items-center gap-2">
+        <button
+          onClick={() => setSelectedSports(new Set())}
+          className={`flex-shrink-0 h-8 px-3 rounded-sm border text-[10px] font-bold uppercase tracking-widest font-mono transition-all ${
+            selectedSports.size === 0
+              ? "bg-primary text-primary-foreground border-primary glow-green"
+              : "bg-card text-muted-foreground border-border hover:text-foreground"
+          }`}
+        >
+          Todos
+        </button>
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide flex-1">
+          {allSports.map((s) => {
+            const active = selectedSports.has(s);
+            const color = sportColor[s];
+            return (
+              <button
+                key={s}
+                onClick={() => toggleSport(s)}
+                style={
+                  active
+                    ? { background: color, borderColor: color, color: "hsl(var(--background))" }
+                    : { borderColor: `${color}55`, color }
+                }
+                className="flex-shrink-0 h-8 px-3 rounded-sm border bg-card text-[10px] font-bold uppercase tracking-widest font-mono transition-all flex items-center gap-1"
+              >
+                <span>{sportEmoji[s]}</span>
+                {eventSportLabels[s]}
+              </button>
+            );
+          })}
+        </div>
       </div>
+      {selectedSports.size > 0 && (
+        <p className="mt-2 text-[10px] uppercase tracking-widest font-mono text-muted-foreground">
+          // {selectedSports.size} deporte{selectedSports.size > 1 ? "s" : ""} ·{" "}
+          {filtered.length} evento{filtered.length !== 1 ? "s" : ""}
+        </p>
+      )}
 
       <div className="mt-4">
         {view === "calendario" && (
@@ -86,13 +117,7 @@ export const EventosHub = () => {
           />
         )}
         {view === "lista" && <ListView events={filtered} cursor={cursor} />}
-        {view === "mapa" && (
-          <MapView
-            events={filtered}
-            activeEventId={activeEventId}
-            setActiveEventId={setActiveEventId}
-          />
-        )}
+        {view === "mapa" && <MapView events={filtered} />}
       </div>
     </div>
   );
@@ -117,7 +142,7 @@ const CalendarView = ({
   const todayMatches = today.getMonth() === month && today.getFullYear() === year;
 
   const firstDay = new Date(year, month, 1);
-  const startOffset = (firstDay.getDay() + 6) % 7; // Monday start
+  const startOffset = (firstDay.getDay() + 6) % 7;
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   const cells: (number | null)[] = [];
@@ -191,10 +216,16 @@ const CalendarView = ({
               }`}
             >
               <span>{d}</span>
-              {dotCount > 0 && !isSelected && (
+              {dotCount > 0 && (
                 <div className="absolute bottom-1 flex gap-0.5">
-                  {Array.from({ length: dotCount }).map((_, idx) => (
-                    <div key={idx} className="h-1 w-1 rounded-full bg-primary" />
+                  {dayEvts.slice(0, 3).map((e, idx) => (
+                    <div
+                      key={idx}
+                      className="h-1 w-1 rounded-full"
+                      style={{
+                        background: isSelected ? "hsl(var(--primary-foreground))" : sportColor[e.sport],
+                      }}
+                    />
                   ))}
                 </div>
               )}
@@ -278,78 +309,101 @@ const ListView = ({ events, cursor }: { events: PlayOnEvent[]; cursor: Date }) =
   );
 };
 
-const MapView = ({
-  events,
-  activeEventId,
-  setActiveEventId,
-}: {
-  events: PlayOnEvent[];
-  activeEventId: string;
-  setActiveEventId: (id: string) => void;
-}) => {
-  // Project lat/lng to a normalized 0-1 box for our fake map
-  const lats = events.map((e) => e.location.lat);
-  const lngs = events.map((e) => e.location.lng);
-  const minLat = Math.min(...lats) - 0.01;
-  const maxLat = Math.max(...lats) + 0.01;
-  const minLng = Math.min(...lngs) - 0.01;
-  const maxLng = Math.max(...lngs) + 0.01;
-
-  const project = (lat: number, lng: number) => ({
-    x: ((lng - minLng) / (maxLng - minLng)) * 100,
-    y: 100 - ((lat - minLat) / (maxLat - minLat)) * 100,
+const makeIcon = (sport: EventSport) => {
+  const color = sportColor[sport];
+  const emoji = sportEmoji[sport];
+  return L.divIcon({
+    className: "playon-marker",
+    html: `<div style="
+      background:${color};
+      width:34px;height:34px;border-radius:50% 50% 50% 0;
+      transform:rotate(-45deg);
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 0 12px ${color}99, 0 2px 6px rgba(0,0,0,.5);
+      border:2px solid hsl(var(--background));
+    ">
+      <span style="transform:rotate(45deg);font-size:16px;line-height:1;">${emoji}</span>
+    </div>`,
+    iconSize: [34, 34],
+    iconAnchor: [17, 34],
+    popupAnchor: [0, -34],
   });
+};
 
-  const active = events.find((e) => e.id === activeEventId) || events[0];
+const MapView = ({ events }: { events: PlayOnEvent[] }) => {
+  const [activeId, setActiveId] = useState<string | null>(events[0]?.id ?? null);
+
+  useEffect(() => {
+    if (!events.find((e) => e.id === activeId)) {
+      setActiveId(events[0]?.id ?? null);
+    }
+  }, [events, activeId]);
+
+  const center: [number, number] = events.length
+    ? [
+        events.reduce((s, e) => s + e.location.lat, 0) / events.length,
+        events.reduce((s, e) => s + e.location.lng, 0) / events.length,
+      ]
+    : [25.6714, -100.3094];
+
+  const active = events.find((e) => e.id === activeId);
+
+  if (events.length === 0) {
+    return (
+      <div className="rounded border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+        Sin eventos para mostrar en el mapa.
+      </div>
+    );
+  }
 
   return (
     <div>
-      <div className="relative h-[320px] rounded border border-border bg-card field-grid overflow-hidden">
-        {/* Fake map streets */}
-        <div className="absolute inset-0 opacity-40">
-          <div className="absolute left-0 right-0 top-1/3 h-px bg-primary/20" />
-          <div className="absolute left-0 right-0 top-2/3 h-px bg-primary/20" />
-          <div className="absolute top-0 bottom-0 left-1/4 w-px bg-primary/20" />
-          <div className="absolute top-0 bottom-0 left-2/3 w-px bg-primary/20" />
-        </div>
-
-        {events.map((e) => {
-          const { x, y } = project(e.location.lat, e.location.lng);
-          const isActive = e.id === activeEventId;
-          return (
-            <button
+      <div className="relative h-[420px] rounded border border-border overflow-hidden">
+        <MapContainer
+          center={center}
+          zoom={11}
+          scrollWheelZoom={false}
+          style={{ height: "100%", width: "100%", background: "hsl(var(--card))" }}
+        >
+          <TileLayer
+            attribution='&copy; OpenStreetMap, &copy; CARTO'
+            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          />
+          {events.map((e) => (
+            <Marker
               key={e.id}
-              onClick={() => setActiveEventId(e.id)}
-              style={{ left: `${x}%`, top: `${y}%` }}
-              className={`absolute -translate-x-1/2 -translate-y-1/2 h-7 w-7 rounded-full flex items-center justify-center transition-all ${
-                isActive
-                  ? "bg-primary text-primary-foreground glow-green-strong scale-125 z-10"
-                  : "bg-primary/80 text-primary-foreground hover:scale-110"
-              }`}
+              position={[e.location.lat, e.location.lng]}
+              icon={makeIcon(e.sport)}
+              eventHandlers={{ click: () => setActiveId(e.id) }}
             >
-              <MapPin size={14} fill="currentColor" />
-            </button>
-          );
-        })}
+              <Popup>
+                <strong>{e.title}</strong>
+                <br />
+                {e.location.name}
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
 
-        {/* Bottom sheet for active pin */}
         {active && (
-          <div className="absolute left-2 right-2 bottom-2">
-            <EventCard event={active} />
+          <div className="absolute left-2 right-2 bottom-2 z-[500]">
+            <div className="relative">
+              <button
+                onClick={() => setActiveId(null)}
+                className="absolute -top-2 -right-2 z-10 h-7 w-7 rounded-full bg-background border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-primary"
+                aria-label="Cerrar"
+              >
+                <X size={14} />
+              </button>
+              <EventCard event={active} />
+            </div>
           </div>
         )}
       </div>
 
-      <h3 className="font-condensed uppercase tracking-widest text-xs text-muted-foreground mt-4 mb-2">
-        // Todos los eventos
-      </h3>
-      <div className="flex gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4 pb-2">
-        {events.map((e) => (
-          <div key={e.id} onClick={() => setActiveEventId(e.id)} className="cursor-pointer">
-            <EventCard event={e} compact />
-          </div>
-        ))}
-      </div>
+      <p className="mt-3 text-[10px] uppercase tracking-widest font-mono text-muted-foreground text-center">
+        // {events.length} eventos en el mapa · toca un pin para ver detalle
+      </p>
     </div>
   );
 };
