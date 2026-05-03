@@ -163,14 +163,14 @@ export const ConectaHub = () => {
           // Mismo deporte · misma colonia · mismo nivel
         </p>
 
-        <div className="mt-4 flex gap-3 overflow-x-auto px-4 pb-2 no-scrollbar">
+        <div className="mt-4 grid grid-cols-2 gap-3 px-4">
           {players.map((p) => {
             const conn = connByPlayer[p.id];
             const status = conn?.status;
             return (
               <div
                 key={p.id}
-                className="flex-shrink-0 w-[180px] rounded-md border border-border bg-card p-3 hover:border-primary transition-colors"
+                className="rounded-md border border-border bg-card p-4 hover:border-primary transition-colors"
               >
                 <div className="flex flex-col items-center text-center">
                   <div className="relative">
