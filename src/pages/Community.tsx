@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { leagues, sportLabels } from "@/data/mock";
-import { Trophy, Sparkles, Target, Award } from "lucide-react";
+import { Trophy } from "lucide-react";
 import { EventosHub } from "@/components/EventosHub";
+import { ConectaHub } from "@/components/ConectaHub";
 
-type Tab = "eventos" | "jugadores" | "ligas";
+type Tab = "eventos" | "conecta" | "ligas";
 
 const tabs: { id: Tab; label: string }[] = [
   { id: "eventos", label: "Eventos" },
-  { id: "jugadores", label: "Jugadores" },
+  { id: "conecta", label: "Conecta" },
   { id: "ligas", label: "Ligas" },
 ];
 
@@ -67,88 +68,10 @@ const Community = () => {
         </div>
       )}
 
-      {tab === "jugadores" && (
-        <>
-          <section className="px-4 mt-7">
-            <div className="flex items-end justify-between mb-3">
-              <h2 className="font-display text-2xl leading-none">Ranking por colonia</h2>
-              <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-mono">
-                Fútbol · Mensual
-              </span>
-            </div>
-            <div className="rounded border border-border bg-card divide-y divide-border">
-              {leaderboard.map((p) => (
-                <div
-                  key={p.rank}
-                  className={`flex items-center gap-3 p-3 ${p.you ? "bg-primary/5" : ""}`}
-                >
-                  <div
-                    className={`h-9 w-9 rounded-sm flex items-center justify-center font-display text-lg ${
-                      p.rank === 1
-                        ? "bg-primary text-primary-foreground"
-                        : p.rank <= 3
-                        ? "bg-primary/20 text-primary"
-                        : "bg-secondary text-muted-foreground"
-                    }`}
-                  >
-                    {p.rank}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold truncate">
-                      {p.name}{" "}
-                      {p.you && (
-                        <span className="text-primary text-[10px] uppercase tracking-widest font-mono ml-1">
-                          · tú
-                        </span>
-                      )}
-                    </p>
-                    <p className="text-[11px] text-muted-foreground">{p.colonia}</p>
-                  </div>
-                  <div className="font-mono text-sm">
-                    <span className="text-primary font-bold">{p.points}</span>
-                    <span className="text-muted-foreground text-[10px] ml-1">PTS</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="px-4 mt-7 mb-8">
-            <h2 className="font-display text-2xl leading-none mb-3 flex items-center gap-2">
-              <Target size={20} className="text-primary" /> Retos semanales
-            </h2>
-            <div className="space-y-2">
-              {challenges.map((c, i) => {
-                const pct = (c.progress / c.total) * 100;
-                return (
-                  <div key={i} className="rounded border border-border bg-card p-3">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-2">
-                        {c.done ? (
-                          <Award size={16} className="text-primary" />
-                        ) : (
-                          <Sparkles size={16} className="text-primary" />
-                        )}
-                        <span className="text-sm font-semibold">{c.title}</span>
-                      </div>
-                      <span className="text-[10px] uppercase tracking-widest font-mono text-primary">
-                        {c.reward}
-                      </span>
-                    </div>
-                    <div className="mt-2 flex items-center gap-2">
-                      <div className="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden">
-                        <div className="h-full bg-gradient-primary" style={{ width: `${pct}%` }} />
-                      </div>
-                      <span className="text-[10px] font-mono text-muted-foreground">
-                        {c.progress}/{c.total}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        </>
+      {tab === "conecta" && (
+        <div className="pb-8">
+          <ConectaHub />
+        </div>
       )}
 
       {tab === "ligas" && (

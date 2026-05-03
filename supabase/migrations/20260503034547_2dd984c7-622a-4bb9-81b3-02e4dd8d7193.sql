@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.is_connection_participant(UUID, UUID) TO authenticated;
