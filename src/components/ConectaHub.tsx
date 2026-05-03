@@ -317,37 +317,6 @@ export const ConectaHub = () => {
         )}
       </section>
 
-      {/* Section B: Badges */}
-      <section className="px-4">
-        <h2 className="font-display text-2xl leading-none">TUS LOGROS</h2>
-        <p className="mt-1 text-[10px] uppercase tracking-widest text-muted-foreground font-mono">
-          // Hitos, rachas y retos completados
-        </p>
-
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          {badgeCatalog.map((b) => {
-            const Icon = b.icon;
-            const locked = b.locked;
-            return (
-              <div
-                key={b.key}
-                className={`rounded-md border p-3 ${locked ? "bg-card/50 border-border/50 opacity-60" : "bg-card border-border"}`}
-              >
-                <div className="flex items-start justify-between">
-                  <div className={`h-9 w-9 rounded-sm flex items-center justify-center ${locked ? "bg-secondary text-muted-foreground" : "bg-primary/10 text-primary"}`}>
-                    {locked ? <Lock size={16} /> : <Icon size={18} />}
-                  </div>
-                </div>
-                <h3 className={`font-display text-base leading-tight mt-2 ${locked ? "text-muted-foreground" : ""}`}>{b.title}</h3>
-                <p className="text-[11px] text-muted-foreground mt-1 leading-snug">{b.description}</p>
-                <p className="text-[9px] uppercase tracking-widest font-mono text-muted-foreground mt-2">
-                  {locked ? "// POR DESBLOQUEAR" : `// ${fmtBadgeDate(b.earnedAt!)}`}
-                </p>
-              </div>
-            );
-          })}
-        </div>
-      </section>
 
       {/* Section C: Connections */}
       <section className="px-4 pb-6">
