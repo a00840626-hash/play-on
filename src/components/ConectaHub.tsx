@@ -152,7 +152,10 @@ export const ConectaHub = () => {
   };
 
   const sportOptions = ["todos", "futbol", "tenis", "padel", "running"];
-  const filtered = sportFilter === "todos" ? players : players.filter((p) => p.sports.includes(sportFilter));
+  const q = query.trim().toLowerCase();
+  const filtered = players
+    .filter((p) => sportFilter === "todos" || p.sports.includes(sportFilter))
+    .filter((p) => !q || p.display_name.toLowerCase().includes(q) || p.colonia.toLowerCase().includes(q));
 
   const accepted = conns.filter((c) => c.status === "accepted");
   const acceptedPlayers = accepted
