@@ -369,21 +369,33 @@ export const ConectaHub = () => {
               const last = lastMsgs[conn.id];
               const u = unread[conn.id] || 0;
               return (
-                <button
-                  key={conn.id}
-                  onClick={() => navigate(`/chat/${conn.id}`)}
-                  className="w-full flex items-center gap-3 p-3 hover:bg-secondary/30 transition-colors text-left"
-                >
-                  <Avatar seed={player.avatar_seed} size={40} />
+                <div key={conn.id} className="flex items-center gap-3 p-3">
+                  <Avatar seed={player.avatar_seed} size={44} name={player.display_name} />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold truncate">{player.display_name}</p>
                     <p className="text-[11px] text-muted-foreground truncate">
-                      Última vez juntos: {conn.last_played || "—"}
+                      {player.colonia} · Última vez: {conn.last_played || "—"}
                     </p>
                     {last && (
                       <p className="text-[12px] text-muted-foreground truncate mt-0.5">{last.body}</p>
                     )}
                   </div>
+                  <button
+                    onClick={() => navigate(`/chat/${conn.id}`)}
+                    className="relative h-8 px-4 rounded-full border border-primary text-primary font-bold uppercase tracking-widest text-[10px] font-mono flex items-center gap-1.5 hover:bg-primary/10 transition-colors"
+                  >
+                    <MessageCircle size={12} /> Chat
+                    {u > 0 && (
+                      <span className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold font-mono flex items-center justify-center glow-green">
+                        {u}
+                      </span>
+                    )}
+                  </button>
+                </div>
+              );
+            })
+          )}
+        </div>
                   {u > 0 ? (
                     <span className="h-5 min-w-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold font-mono flex items-center justify-center glow-green">
                       {u}
