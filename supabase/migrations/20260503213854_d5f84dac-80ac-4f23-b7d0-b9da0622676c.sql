@@ -1,0 +1,1 @@
+CREATE POLICY "demo open select players" ON public.demo_players FOR SELECT TO public USING (true);
