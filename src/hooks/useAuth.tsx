@@ -1,34 +1,51 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { Session, User } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
 
+interface FakeUser { id: string; email: string; }
 interface AuthCtx {
-  session: Session | null;
-  user: User | null;
+  session: { user: FakeUser } | null;
+  user: FakeUser | null;
   loading: boolean;
   signOut: () => Promise<void>;
 }
 
+const STORAGE_KEY = "playon:demo-user";
+
+const getOrCreateUser = (): FakeUser => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  const u: FakeUser = {
+    id: (crypto as any).randomUUID ? crypto.randomUUID() : `u-${Date.now()}`,
+    email: "demo@playon.app",
+  };
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(u)); } catch {}
+  return u;
+};
+
 const Ctx = createContext<AuthCtx>({ session: null, user: null, loading: true, signOut: async () => {} });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<FakeUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
-      setSession(s);
-      setLoading(false);
-    });
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setLoading(false);
-    });
-    return () => sub.subscription.unsubscribe();
+    setUser(getOrCreateUser());
+    setLoading(false);
   }, []);
 
   return (
-    <Ctx.Provider value={{ session, user: session?.user ?? null, loading, signOut: async () => { await supabase.auth.signOut(); } }}>
+    <Ctx.Provider
+      value={{
+        session: user ? { user } : null,
+        user,
+        loading,
+        signOut: async () => {
+          try { localStorage.removeItem(STORAGE_KEY); } catch {}
+          setUser(null);
+        },
+      }}
+    >
       {children}
     </Ctx.Provider>
   );

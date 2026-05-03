@@ -17,7 +17,7 @@ import Profile from "./pages/Profile";
 import OwnerDashboard from "./pages/OwnerDashboard";
 import Chat from "./pages/Chat";
 import { DeviceFrame } from "./components/playon/DeviceFrame";
-import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { AuthProvider } from "@/hooks/useAuth";
 
 const queryClient = new QueryClient();
 
@@ -51,7 +51,7 @@ const App = () => (
               <Route path="/matches/new" element={<NewMatch />} />
               <Route path="/matches/:id" element={<MatchDetail />} />
               <Route path="/community" element={<Community />} />
-              <Route path="/chat/:connectionId" element={<RequireAuth><Chat /></RequireAuth>} />
+              <Route path="/chat/:connectionId" element={<Chat />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/owner" element={<OwnerDashboard />} />
               <Route path="*" element={<NotFound />} />
