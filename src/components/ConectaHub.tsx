@@ -47,16 +47,40 @@ const sportColors: Record<string, string> = {
   americano: "#A87544",
 };
 
-const Avatar = ({ seed, size = 72 }: { seed: string; size?: number }) => (
-  <img
-    src={`https://i.pravatar.cc/200?u=${encodeURIComponent(seed)}`}
-    alt={seed}
-    width={size}
-    height={size}
-    className="rounded-full bg-secondary object-cover"
-    style={{ width: size, height: size }}
-  />
-);
+const femaleNames = new Set([
+  "ana", "mariana", "paola", "renata", "maria", "sofia", "lucia", "carla", "laura", "valeria", "camila", "daniela",
+]);
+const femaleHints = ["a", "ia"]; // weak fallback by name ending
+
+const guessGender = (seed: string, displayName?: string): "men" | "women" => {
+  const key = (seed || "").toLowerCase();
+  if (femaleNames.has(key)) return "women";
+  const first = (displayName || seed || "").split(" ")[0].toLowerCase().replace(/[^a-záéíóú]/g, "");
+  if (femaleNames.has(first)) return "women";
+  if (first.endsWith("a") && !["luca", "noa"].includes(first)) return "women";
+  return "men";
+};
+
+const hashSeed = (s: string) => {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return h;
+};
+
+const Avatar = ({ seed, size = 72, name }: { seed: string; size?: number; name?: string }) => {
+  const gender = guessGender(seed, name);
+  const idx = hashSeed(seed) % 99;
+  return (
+    <img
+      src={`https://randomuser.me/api/portraits/${gender}/${idx}.jpg`}
+      alt={seed}
+      width={size}
+      height={size}
+      className="rounded-full bg-secondary object-cover"
+      style={{ width: size, height: size }}
+    />
+  );
+};
 
 export const ConectaHub = () => {
   const navigate = useNavigate();
@@ -238,7 +262,7 @@ export const ConectaHub = () => {
                 >
                   <div className="flex flex-col items-center text-center">
                     <div className="relative">
-                      <Avatar seed={p.avatar_seed} size={56} />
+                      <Avatar seed={p.avatar_seed} size={56} name={p.display_name} />
                       {p.online && <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-primary border-2 border-card glow-green" />}
                     </div>
                     <h3 className="font-display text-lg leading-none mt-2">{p.display_name}</h3>
@@ -345,29 +369,29 @@ export const ConectaHub = () => {
               const last = lastMsgs[conn.id];
               const u = unread[conn.id] || 0;
               return (
-                <button
-                  key={conn.id}
-                  onClick={() => navigate(`/chat/${conn.id}`)}
-                  className="w-full flex items-center gap-3 p-3 hover:bg-secondary/30 transition-colors text-left"
-                >
-                  <Avatar seed={player.avatar_seed} size={40} />
+                <div key={conn.id} className="flex items-center gap-3 p-3">
+                  <Avatar seed={player.avatar_seed} size={44} name={player.display_name} />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold truncate">{player.display_name}</p>
                     <p className="text-[11px] text-muted-foreground truncate">
-                      Última vez juntos: {conn.last_played || "—"}
+                      {player.colonia} · Última vez: {conn.last_played || "—"}
                     </p>
                     {last && (
                       <p className="text-[12px] text-muted-foreground truncate mt-0.5">{last.body}</p>
                     )}
                   </div>
-                  {u > 0 ? (
-                    <span className="h-5 min-w-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold font-mono flex items-center justify-center glow-green">
-                      {u}
-                    </span>
-                  ) : (
-                    <ArrowRight size={14} className="text-muted-foreground" />
-                  )}
-                </button>
+                  <button
+                    onClick={() => navigate(`/chat/${conn.id}`)}
+                    className="relative h-8 px-4 rounded-full border border-primary text-primary font-bold uppercase tracking-widest text-[10px] font-mono flex items-center gap-1.5 hover:bg-primary/10 transition-colors"
+                  >
+                    <MessageCircle size={12} /> Chat
+                    {u > 0 && (
+                      <span className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold font-mono flex items-center justify-center glow-green">
+                        {u}
+                      </span>
+                    )}
+                  </button>
+                </div>
               );
             })
           )}
