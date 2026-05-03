@@ -47,16 +47,40 @@ const sportColors: Record<string, string> = {
   americano: "#A87544",
 };
 
-const Avatar = ({ seed, size = 72 }: { seed: string; size?: number }) => (
-  <img
-    src={`https://i.pravatar.cc/200?u=${encodeURIComponent(seed)}`}
-    alt={seed}
-    width={size}
-    height={size}
-    className="rounded-full bg-secondary object-cover"
-    style={{ width: size, height: size }}
-  />
-);
+const femaleNames = new Set([
+  "ana", "mariana", "paola", "renata", "maria", "sofia", "lucia", "carla", "laura", "valeria", "camila", "daniela",
+]);
+const femaleHints = ["a", "ia"]; // weak fallback by name ending
+
+const guessGender = (seed: string, displayName?: string): "men" | "women" => {
+  const key = (seed || "").toLowerCase();
+  if (femaleNames.has(key)) return "women";
+  const first = (displayName || seed || "").split(" ")[0].toLowerCase().replace(/[^a-záéíóú]/g, "");
+  if (femaleNames.has(first)) return "women";
+  if (first.endsWith("a") && !["luca", "noa"].includes(first)) return "women";
+  return "men";
+};
+
+const hashSeed = (s: string) => {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return h;
+};
+
+const Avatar = ({ seed, size = 72, name }: { seed: string; size?: number; name?: string }) => {
+  const gender = guessGender(seed, name);
+  const idx = hashSeed(seed) % 99;
+  return (
+    <img
+      src={`https://randomuser.me/api/portraits/${gender}/${idx}.jpg`}
+      alt={seed}
+      width={size}
+      height={size}
+      className="rounded-full bg-secondary object-cover"
+      style={{ width: size, height: size }}
+    />
+  );
+};
 
 export const ConectaHub = () => {
   const navigate = useNavigate();
