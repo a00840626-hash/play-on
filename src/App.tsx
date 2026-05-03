@@ -26,13 +26,6 @@ const Root = () => {
   return done ? <Home /> : <Navigate to="/onboarding" replace />;
 };
 
-const RequireAuth = ({ children }: { children: JSX.Element }) => {
-  const { session, loading } = useAuth();
-  if (loading) return null;
-  if (!session) return <Navigate to="/login" replace />;
-  return children;
-};
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
