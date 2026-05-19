@@ -5,7 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 // (ese está gestionado por Lovable Cloud y no debe editarse).
 
 const EXTERNAL_SUPABASE_URL = "https://krahznczjgavdzicoxsc.supabase.co";
-const EXTERNAL_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_rE6Y5Ldh-zZ5Pdv8KwrfZQ_XMfJiCUhm";
+const EXTERNAL_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_rE6Y5Ldh-zZ5Pdv8KwrfZQ_XMfjID9a";
 
 export const supabaseExternal = createClient(
   EXTERNAL_SUPABASE_URL,
