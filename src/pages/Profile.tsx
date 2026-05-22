@@ -420,6 +420,12 @@ const ProfileContent = () => {
         </Link>
       </section>
 
+      {/* Waitlist / Pre-registro para el launch */}
+      <section className="px-4 mt-8">
+        <WaitlistCard />
+      </section>
+
+
       {/* Settings */}
       <section className="px-4 mt-5 mb-8 space-y-2">
         <SettingsRow icon={Settings} label="Configuración" />
