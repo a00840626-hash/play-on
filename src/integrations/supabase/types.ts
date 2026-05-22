@@ -281,6 +281,30 @@ export type Database = {
         }
         Relationships: []
       }
+      signups: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          phone: string | null
+          source: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          phone?: string | null
+          source?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          phone?: string | null
+          source?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

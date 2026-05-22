@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Check, MapPin, Mail, ShieldCheck, Trophy, User as UserIcon, Building2 } from "lucide-react";
+import { ArrowRight, Check, MapPin, Mail, Phone, ShieldCheck, Trophy, User as UserIcon, Building2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 type Step = "splash" | "auth" | "userType" | "sports" | "skill" | "location" | "welcome";
 type Sport = "futbol" | "tenis" | "padel" | "running" | "voleibol" | "basket" | "tocho" | "americano";
@@ -28,9 +30,36 @@ const Onboarding = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>("splash");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [userType, setUserType] = useState<UserType | null>(null);
   const [sports, setSports] = useState<Sport[]>([]);
   const [skill, setSkill] = useState<Skill | null>(null);
+
+  const submitSignup = async () => {
+    const cleanEmail = email.trim();
+    const cleanPhone = phone.trim();
+    if (!cleanEmail && !cleanPhone) return;
+    setSubmitting(true);
+    try {
+      const { error } = await supabase.from("signups").insert({
+        email: cleanEmail || null,
+        phone: cleanPhone || null,
+        source: "onboarding",
+      });
+      if (error) throw error;
+      toast({ title: "¡Listo!", description: "Te registramos correctamente." });
+      setStep("userType");
+    } catch (err: any) {
+      toast({
+        title: "Error al registrar",
+        description: err?.message ?? "Intenta de nuevo.",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   // Auto-advance splash
   useEffect(() => {
@@ -105,12 +134,29 @@ const Onboarding = () => {
               </div>
             </label>
 
+            <label className="block">
+              <span className="text-[11px] uppercase tracking-widest font-mono text-muted-foreground">
+                Teléfono
+              </span>
+              <div className="relative mt-1.5">
+                <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="tel"
+                  inputMode="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+52 55 1234 5678"
+                  className="w-full h-12 pl-9 pr-3 rounded bg-card border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 text-sm"
+                />
+              </div>
+            </label>
+
             <button
-              disabled={!email.includes("@")}
-              onClick={() => setStep("userType")}
+              disabled={submitting || (!email.includes("@") && phone.trim().length < 7)}
+              onClick={submitSignup}
               className="w-full h-12 rounded bg-primary text-primary-foreground font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed glow-green hover:brightness-110 transition"
             >
-              Crear cuenta <ArrowRight size={16} />
+              {submitting ? "Guardando..." : <>Crear cuenta <ArrowRight size={16} /></>}
             </button>
 
             <p className="text-[10px] text-muted-foreground text-center pt-2 leading-relaxed">
