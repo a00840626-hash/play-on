@@ -134,12 +134,29 @@ const Onboarding = () => {
               </div>
             </label>
 
+            <label className="block">
+              <span className="text-[11px] uppercase tracking-widest font-mono text-muted-foreground">
+                Teléfono
+              </span>
+              <div className="relative mt-1.5">
+                <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="tel"
+                  inputMode="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+52 55 1234 5678"
+                  className="w-full h-12 pl-9 pr-3 rounded bg-card border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 text-sm"
+                />
+              </div>
+            </label>
+
             <button
-              disabled={!email.includes("@")}
-              onClick={() => setStep("userType")}
+              disabled={submitting || (!email.includes("@") && phone.trim().length < 7)}
+              onClick={submitSignup}
               className="w-full h-12 rounded bg-primary text-primary-foreground font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed glow-green hover:brightness-110 transition"
             >
-              Crear cuenta <ArrowRight size={16} />
+              {submitting ? "Guardando..." : <>Crear cuenta <ArrowRight size={16} /></>}
             </button>
 
             <p className="text-[10px] text-muted-foreground text-center pt-2 leading-relaxed">
