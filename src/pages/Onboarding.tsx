@@ -30,9 +30,36 @@ const Onboarding = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>("splash");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [userType, setUserType] = useState<UserType | null>(null);
   const [sports, setSports] = useState<Sport[]>([]);
   const [skill, setSkill] = useState<Skill | null>(null);
+
+  const submitSignup = async () => {
+    const cleanEmail = email.trim();
+    const cleanPhone = phone.trim();
+    if (!cleanEmail && !cleanPhone) return;
+    setSubmitting(true);
+    try {
+      const { error } = await supabase.from("signups").insert({
+        email: cleanEmail || null,
+        phone: cleanPhone || null,
+        source: "onboarding",
+      });
+      if (error) throw error;
+      toast({ title: "¡Listo!", description: "Te registramos correctamente." });
+      setStep("userType");
+    } catch (err: any) {
+      toast({
+        title: "Error al registrar",
+        description: err?.message ?? "Intenta de nuevo.",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   // Auto-advance splash
   useEffect(() => {
