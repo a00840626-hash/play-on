@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Check, MapPin, Mail, ShieldCheck, Trophy, User as UserIcon, Building2 } from "lucide-react";
+import { ArrowRight, Check, MapPin, Mail, Phone, ShieldCheck, Trophy, User as UserIcon, Building2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 type Step = "splash" | "auth" | "userType" | "sports" | "skill" | "location" | "welcome";
 type Sport = "futbol" | "tenis" | "padel" | "running" | "voleibol" | "basket" | "tocho" | "americano";
