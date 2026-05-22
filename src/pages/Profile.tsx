@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Settings, LogOut, Check, ArrowUpRight, Share, BarChart3, ChevronRight, RotateCcw, type LucideIcon } from "lucide-react";
+import { Settings, LogOut, Check, ArrowUpRight, Share, BarChart3, ChevronRight, RotateCcw, Mail, Rocket, type LucideIcon } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { RankingChart } from "@/components/playon/RankingChart";
 import { SportCard } from "@/components/playon/SportCard";
 import { Heatmap } from "@/components/playon/Heatmap";
+import { toast } from "@/hooks/use-toast";
 
 const Profile = () => {
   return (
@@ -418,6 +420,12 @@ const ProfileContent = () => {
         </Link>
       </section>
 
+      {/* Waitlist / Pre-registro para el launch */}
+      <section className="px-4 mt-8">
+        <WaitlistCard />
+      </section>
+
+
       {/* Settings */}
       <section className="px-4 mt-5 mb-8 space-y-2">
         <SettingsRow icon={Settings} label="Configuración" />
@@ -454,4 +462,84 @@ const SettingsRow = ({
   </button>
 );
 
+const WAITLIST_KEY = "playon:waitlist";
+
+const WaitlistCard = () => {
+  const [email, setEmail] = useState("");
+  const [submitted, setSubmitted] = useState<boolean>(() => {
+    try { return !!localStorage.getItem(WAITLIST_KEY); } catch { return false; }
+  });
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    try {
+      const raw = localStorage.getItem("playon:waitlist:list");
+      const list: string[] = raw ? JSON.parse(raw) : [];
+      if (!list.includes(email)) list.push(email);
+      localStorage.setItem("playon:waitlist:list", JSON.stringify(list));
+      localStorage.setItem(WAITLIST_KEY, JSON.stringify({ email, at: Date.now() }));
+    } catch {}
+    setSubmitted(true);
+    toast({ title: "¡Estás en la lista!", description: "Te avisaremos cuando PlayOn lance oficialmente." });
+  };
+
+  return (
+    <div
+      className="relative overflow-hidden rounded-lg border border-primary/40 bg-card p-5"
+      style={{ background: "linear-gradient(180deg, hsl(150 60% 6%) 0%, hsl(var(--card)) 100%)" }}
+    >
+      <div className="absolute inset-0 field-grid opacity-40 pointer-events-none" />
+      <div className="relative">
+        <div className="flex items-center gap-2">
+          <Rocket size={16} className="text-primary" />
+          <span
+            className="font-condensed font-bold text-[11px] uppercase text-primary"
+            style={{ letterSpacing: "0.22em" }}
+          >
+            Próximo Lanzamiento
+          </span>
+        </div>
+        <h3 className="font-display text-foreground mt-2" style={{ fontSize: 22, lineHeight: 1.05 }}>
+          REGÍSTRATE PARA <span className="text-primary text-glow">EL LAUNCH</span>
+        </h3>
+        <p className="font-body text-[12px] text-muted-foreground mt-1.5">
+          Sé de los primeros en jugar cuando PlayOn esté disponible al público.
+        </p>
+
+        {submitted ? (
+          <div className="mt-4 flex items-center gap-2 rounded border border-primary/40 bg-primary/10 px-3 py-2.5">
+            <Check size={16} className="text-primary" strokeWidth={3} />
+            <span className="font-body text-[12.5px] text-foreground">
+              ¡Listo! Te avisaremos por correo.
+            </span>
+          </div>
+        ) : (
+          <form onSubmit={submit} className="mt-4 space-y-2">
+            <div className="relative">
+              <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="tu@correo.com"
+                className="w-full h-11 pl-9 pr-3 rounded bg-background border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 text-sm"
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full h-11 rounded bg-primary text-primary-foreground font-display uppercase text-xs flex items-center justify-center gap-2 glow-green hover:brightness-110 transition"
+              style={{ letterSpacing: "0.18em" }}
+            >
+              Unirme a la lista →
+            </button>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export default Profile;
+
