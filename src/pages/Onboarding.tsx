@@ -4,7 +4,7 @@ import { ArrowRight, Check, MapPin, Mail, Phone, ShieldCheck, Trophy, User as Us
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
-type Step = "splash" | "auth" | "userType" | "sports" | "skill" | "location" | "welcome";
+type Step = "launch" | "splash" | "auth" | "userType" | "sports" | "skill" | "location" | "welcome";
 type Sport = "futbol" | "tenis" | "padel" | "running" | "voleibol" | "basket" | "tocho" | "americano";
 type Skill = "principiante" | "intermedio" | "avanzado";
 type UserType = "player" | "owner";
