@@ -28,13 +28,41 @@ const skillList: { id: Skill; label: string; desc: string }[] = [
 
 const Onboarding = () => {
   const navigate = useNavigate();
-  const [step, setStep] = useState<Step>("splash");
+  const [step, setStep] = useState<Step>("launch");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [launchPhone, setLaunchPhone] = useState("");
+  const [launchSubmitting, setLaunchSubmitting] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [userType, setUserType] = useState<UserType | null>(null);
   const [sports, setSports] = useState<Sport[]>([]);
   const [skill, setSkill] = useState<Skill | null>(null);
+
+  const submitLaunchSignup = async () => {
+    const cleanPhone = launchPhone.trim();
+    if (cleanPhone.length < 7) return;
+    setLaunchSubmitting(true);
+    try {
+      const { error } = await supabase.from("signups").insert({
+        phone: cleanPhone,
+        source: "launch_notify",
+      });
+      if (error) throw error;
+      toast({
+        title: "¡Te avisaremos!",
+        description: "Recibirás un mensaje cuando lancemos PlayOn.",
+      });
+      setStep("splash");
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err?.message ?? "Intenta de nuevo.",
+        variant: "destructive",
+      });
+    } finally {
+      setLaunchSubmitting(false);
+    }
+  };
 
   const submitSignup = async () => {
     const cleanEmail = email.trim();
