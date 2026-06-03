@@ -4,7 +4,7 @@ import { ArrowRight, Check, MapPin, Mail, Phone, ShieldCheck, Trophy, User as Us
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
-type Step = "splash" | "auth" | "userType" | "sports" | "skill" | "location" | "welcome";
+type Step = "launch" | "splash" | "auth" | "userType" | "sports" | "skill" | "location" | "welcome";
 type Sport = "futbol" | "tenis" | "padel" | "running" | "voleibol" | "basket" | "tocho" | "americano";
 type Skill = "principiante" | "intermedio" | "avanzado";
 type UserType = "player" | "owner";
@@ -28,13 +28,41 @@ const skillList: { id: Skill; label: string; desc: string }[] = [
 
 const Onboarding = () => {
   const navigate = useNavigate();
-  const [step, setStep] = useState<Step>("splash");
+  const [step, setStep] = useState<Step>("launch");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [launchPhone, setLaunchPhone] = useState("");
+  const [launchSubmitting, setLaunchSubmitting] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [userType, setUserType] = useState<UserType | null>(null);
   const [sports, setSports] = useState<Sport[]>([]);
   const [skill, setSkill] = useState<Skill | null>(null);
+
+  const submitLaunchSignup = async () => {
+    const cleanPhone = launchPhone.trim();
+    if (cleanPhone.length < 7) return;
+    setLaunchSubmitting(true);
+    try {
+      const { error } = await supabase.from("signups").insert({
+        phone: cleanPhone,
+        source: "launch_notify",
+      });
+      if (error) throw error;
+      toast({
+        title: "¡Te avisaremos!",
+        description: "Recibirás un mensaje cuando lancemos PlayOn.",
+      });
+      setStep("splash");
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err?.message ?? "Intenta de nuevo.",
+        variant: "destructive",
+      });
+    } finally {
+      setLaunchSubmitting(false);
+    }
+  };
 
   const submitSignup = async () => {
     const cleanEmail = email.trim();
@@ -83,6 +111,57 @@ const Onboarding = () => {
 
   return (
     <div className="min-h-full w-full bg-background text-foreground flex flex-col">
+      {step === "launch" && (
+        <StepShell>
+          <div className="flex flex-col items-center text-center pt-6 animate-fade-up">
+            <Logo />
+            <p className="mt-6 text-[11px] uppercase tracking-[0.4em] font-mono text-primary">
+              Próximamente
+            </p>
+            <h1 className="font-display text-4xl mt-3 leading-none">
+              SÉ EL <span className="text-primary text-glow">PRIMERO</span> EN JUGAR
+            </h1>
+            <p className="mt-3 text-sm text-muted-foreground max-w-[300px]">
+              Déjanos tu número y te avisamos en cuanto lancemos PlayOn en tu ciudad.
+            </p>
+          </div>
+
+          <div className="mt-8 space-y-3">
+            <label className="block">
+              <span className="text-[11px] uppercase tracking-widest font-mono text-muted-foreground">
+                Teléfono
+              </span>
+              <div className="relative mt-1.5">
+                <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="tel"
+                  inputMode="tel"
+                  value={launchPhone}
+                  onChange={(e) => setLaunchPhone(e.target.value)}
+                  placeholder="+52 55 1234 5678"
+                  className="w-full h-12 pl-9 pr-3 rounded bg-card border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30 text-sm"
+                />
+              </div>
+            </label>
+
+            <button
+              disabled={launchSubmitting || launchPhone.trim().length < 7}
+              onClick={submitLaunchSignup}
+              className="w-full h-12 rounded bg-primary text-primary-foreground font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed glow-green hover:brightness-110 transition"
+            >
+              {launchSubmitting ? "Guardando..." : <>Avísame del lanzamiento <ArrowRight size={16} /></>}
+            </button>
+
+            <button
+              onClick={() => setStep("splash")}
+              className="w-full h-10 rounded text-muted-foreground text-[11px] uppercase tracking-widest font-mono hover:text-foreground transition"
+            >
+              Ver demo de la app
+            </button>
+          </div>
+        </StepShell>
+      )}
+
       {step === "splash" && <SplashScreen />}
 
       {step === "auth" && (
