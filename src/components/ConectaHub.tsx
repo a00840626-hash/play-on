@@ -98,8 +98,6 @@ const womenPhotos = [
   "photo-1531746020798-e6953c6e8e04",
 ];
 
-import ivanAvatar from "@/assets/ivan-avatar.jpg";
-
 const Avatar = ({ seed, size = 72, name }: { seed: string; size?: number; name?: string }) => {
   if (seed === "ivan") {
     return (
