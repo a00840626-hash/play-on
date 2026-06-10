@@ -67,9 +67,13 @@ const hashSeed = (s: string) => {
   return h;
 };
 
+const youngMenIdx = [9, 11, 12, 14, 15, 22, 25, 32, 33, 41, 45, 48, 53, 54, 67, 75, 83, 86, 90, 94];
+const youngWomenIdx = [0, 1, 5, 9, 12, 16, 19, 24, 26, 31, 39, 44, 47, 52, 57, 65, 68, 74, 79, 85];
+
 const Avatar = ({ seed, size = 72, name }: { seed: string; size?: number; name?: string }) => {
   const gender = guessGender(seed, name);
-  const idx = hashSeed(seed) % 99;
+  const pool = gender === "women" ? youngWomenIdx : youngMenIdx;
+  const idx = pool[hashSeed(seed) % pool.length];
   return (
     <img
       src={`https://randomuser.me/api/portraits/${gender}/${idx}.jpg`}
