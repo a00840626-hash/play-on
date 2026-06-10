@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import ivanAvatar from "@/assets/ivan-avatar.jpg";
 import { Star, MessageCircle, Lock, Check, Zap, ArrowRight, Radio, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
