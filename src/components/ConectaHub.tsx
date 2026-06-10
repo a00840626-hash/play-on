@@ -67,24 +67,54 @@ const hashSeed = (s: string) => {
   return h;
 };
 
-const youngMenIdx = [9, 11, 12, 14, 15, 22, 25, 32, 33, 41, 45, 48, 53, 54, 67, 75, 83, 86, 90, 94];
-const youngWomenIdx = [0, 1, 5, 9, 12, 16, 19, 24, 26, 31, 39, 44, 47, 52, 57, 65, 68, 74, 79, 85];
+// Curated Unsplash portraits — young, attractive athletes
+const menPhotos = [
+  "photo-1500648767791-00dcc994a43e", // young man
+  "photo-1507003211169-0a1dd7228f2d",
+  "photo-1463453091185-61582044d556",
+  "photo-1531123897727-8f129e1688ce",
+  "photo-1492562080023-ab3db95bfbce",
+  "photo-1542909168-82c3e7fdca5c",
+  "photo-1506794778202-cad84cf45f1d",
+  "photo-1539571696357-5a69c17a67c6",
+  "photo-1502823403499-6ccfcf4fb453",
+  "photo-1488161628813-04466f872be2",
+  "photo-1519085360753-af0119f7cbe7",
+  "photo-1504257432389-52343af06ae3",
+];
+const womenPhotos = [
+  "photo-1494790108377-be9c29b29330", // smiling young woman
+  "photo-1438761681033-6461ffad8d80",
+  "photo-1517841905240-472988babdf9",
+  "photo-1534528741775-53994a69daeb",
+  "photo-1488426862026-3ee34a7d66df",
+  "photo-1524504388940-b1c1722653e1",
+  "photo-1531746020798-e6953c6e8e04",
+  "photo-1502685104226-ee32379fefbe",
+  "photo-1508214751196-bcfd4ca60f91",
+  "photo-1521252659862-eec69941b071",
+  "photo-1499952127939-9bbf5af6c51c",
+  "photo-1496440737103-cd596325d314",
+];
 
 const Avatar = ({ seed, size = 72, name }: { seed: string; size?: number; name?: string }) => {
   const gender = guessGender(seed, name);
-  const pool = gender === "women" ? youngWomenIdx : youngMenIdx;
-  const idx = pool[hashSeed(seed) % pool.length];
+  const pool = gender === "women" ? womenPhotos : menPhotos;
+  const id = pool[hashSeed(seed) % pool.length];
+  const s = Math.round(size * 2);
   return (
     <img
-      src={`https://randomuser.me/api/portraits/${gender}/${idx}.jpg`}
+      src={`https://images.unsplash.com/${id}?w=${s}&h=${s}&fit=crop&crop=faces&auto=format&q=80`}
       alt={seed}
       width={size}
       height={size}
       className="rounded-full bg-secondary object-cover"
       style={{ width: size, height: size }}
+      loading="lazy"
     />
   );
 };
+
 
 export const ConectaHub = () => {
   const navigate = useNavigate();
