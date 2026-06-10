@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ivanAvatar from "@/assets/ivan-avatar.jpg";
+import diegoAvatar from "@/assets/diego-avatar.jpg";
+import anaAvatar from "@/assets/ana-avatar.jpg";
+import carlosAvatar from "@/assets/carlos-avatar.jpg";
+import marianaAvatar from "@/assets/mariana-avatar.jpg";
+import jorgeAvatar from "@/assets/jorge-avatar.jpg";
+import paolaAvatar from "@/assets/paola-avatar.jpg";
+import renataAvatar from "@/assets/renata-avatar.jpg";
 import { Star, MessageCircle, Lock, Check, Zap, ArrowRight, Radio, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -98,11 +105,23 @@ const womenPhotos = [
   "photo-1531746020798-e6953c6e8e04",
 ];
 
+const customAvatars: Record<string, string> = {
+  ivan: ivanAvatar,
+  diego: diegoAvatar,
+  ana: anaAvatar,
+  carlos: carlosAvatar,
+  mariana: marianaAvatar,
+  jorge: jorgeAvatar,
+  paola: paolaAvatar,
+  renata: renataAvatar,
+};
+
 const Avatar = ({ seed, size = 72, name }: { seed: string; size?: number; name?: string }) => {
-  if (seed === "ivan") {
+  const custom = customAvatars[seed];
+  if (custom) {
     return (
       <img
-        src={ivanAvatar}
+        src={custom}
         alt={seed}
         width={size}
         height={size}
