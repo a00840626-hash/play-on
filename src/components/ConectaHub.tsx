@@ -97,7 +97,22 @@ const womenPhotos = [
   "photo-1531746020798-e6953c6e8e04",
 ];
 
+import ivanAvatar from "@/assets/ivan-avatar.jpg";
+
 const Avatar = ({ seed, size = 72, name }: { seed: string; size?: number; name?: string }) => {
+  if (seed === "ivan") {
+    return (
+      <img
+        src={ivanAvatar}
+        alt={seed}
+        width={size}
+        height={size}
+        className="rounded-full bg-secondary object-cover"
+        style={{ width: size, height: size }}
+        loading="lazy"
+      />
+    );
+  }
   const gender = guessGender(seed, name);
   const pool = gender === "women" ? womenPhotos : menPhotos;
   const id = pool[hashSeed(seed) % pool.length];
