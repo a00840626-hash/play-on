@@ -377,13 +377,13 @@ export const ConectaHub = () => {
                   </span>
                   <h2 className="font-display text-3xl leading-none mt-2">JUGADORES</h2>
                   <p className="mt-1.5 text-[11px] uppercase tracking-widest text-muted-foreground font-mono">
-                    // Tu próximo rival está en la ZMM
+                    // Tu próximo rival está en Monterrey
                   </p>
                 </div>
                 <div className="text-right shrink-0">
                   <p className="font-display text-3xl leading-none text-primary">{formatCount(ZMM_TOTAL)}</p>
                   <p className="text-[9px] uppercase tracking-widest font-mono text-muted-foreground mt-1">
-                    activos · ZMM
+                    activos · Monterrey
                   </p>
                 </div>
               </div>
