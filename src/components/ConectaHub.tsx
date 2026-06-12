@@ -463,7 +463,7 @@ export const ConectaHub = () => {
                   <MapPin size={14} />
                 </span>
                 <span className="flex-1 text-left text-sm font-semibold">Todos los municipios</span>
-                <span className="text-[10px] font-mono text-muted-foreground">{totalInScope}</span>
+                <span className="text-[10px] font-mono text-muted-foreground">{formatCount(totalInScope)}</span>
                 {cityFilter === "todas" && <Check size={14} className="text-primary" />}
               </button>
               <div className="my-2 h-px bg-border" />
