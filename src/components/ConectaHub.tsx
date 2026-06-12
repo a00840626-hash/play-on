@@ -292,25 +292,43 @@ export const ConectaHub = () => {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       {/* Section A: Players nearby */}
       <section className="mt-6">
+        {/* Hero header */}
         <div className="px-4">
-          <h2 className="font-display text-2xl leading-none">JUGADORES</h2>
-          <p className="mt-1 text-[10px] uppercase tracking-widest text-muted-foreground font-mono">
-            // Encuentra a tu próximo rival o compañero
-          </p>
+          <div className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-card via-card to-secondary/40 p-5">
+            <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-primary/15 blur-3xl" />
+            <div className="absolute -left-12 bottom-0 h-24 w-24 rounded-full bg-primary/10 blur-2xl" />
+            <div className="relative flex items-start justify-between gap-3">
+              <div>
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/15 text-primary text-[9px] font-bold font-mono uppercase tracking-widest">
+                  <Radio size={10} className="animate-pulse" /> En vivo
+                </span>
+                <h2 className="font-display text-3xl leading-none mt-2">JUGADORES</h2>
+                <p className="mt-1.5 text-[11px] uppercase tracking-widest text-muted-foreground font-mono">
+                  // Encuentra a tu próximo rival
+                </p>
+              </div>
+              <div className="text-right shrink-0">
+                <p className="font-display text-3xl leading-none text-primary">{totalInScope}</p>
+                <p className="text-[9px] uppercase tracking-widest font-mono text-muted-foreground mt-1">
+                  cerca de ti
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Search */}
-        <div className="mt-3 px-4">
+        <div className="mt-4 px-4">
           <div className="relative">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar jugador o colonia..."
-              className="w-full h-10 pl-9 pr-3 rounded-full bg-card border border-border text-sm focus:outline-none focus:border-primary placeholder:text-muted-foreground"
+              placeholder="Buscar jugador o municipio..."
+              className="w-full h-12 pl-11 pr-4 rounded-2xl bg-card border border-border text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/40 placeholder:text-muted-foreground transition-all"
             />
           </div>
         </div>
@@ -323,10 +341,10 @@ export const ConectaHub = () => {
               <button
                 key={s}
                 onClick={() => setSportFilter(s)}
-                className={`flex-shrink-0 h-7 px-3 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono border transition-colors ${
+                className={`flex-shrink-0 h-8 px-3.5 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono border transition-all ${
                   active
-                    ? "bg-primary text-primary-foreground border-primary glow-green"
-                    : "border-border text-muted-foreground hover:text-foreground"
+                    ? "bg-primary text-primary-foreground border-primary glow-green scale-105"
+                    : "border-border bg-card text-muted-foreground hover:text-foreground hover:border-primary/40"
                 }`}
               >
                 {s}
@@ -339,28 +357,31 @@ export const ConectaHub = () => {
         <div className="mt-3 px-4">
           <button
             onClick={() => { setCitySearch(""); setCityOpen(true); }}
-            className="group w-full flex items-center gap-3 h-12 px-3 rounded-xl bg-card border border-border hover:border-primary/50 transition-colors text-left"
+            className="group w-full flex items-center gap-3 h-14 px-3 rounded-2xl bg-card border border-border hover:border-primary/50 transition-all text-left"
           >
-            <span className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/15 text-primary shrink-0">
-              <MapPin size={16} />
+            <span className="flex items-center justify-center h-9 w-9 rounded-xl bg-primary/15 text-primary shrink-0 group-hover:bg-primary/25 transition-colors">
+              <MapPin size={17} />
             </span>
             <span className="flex-1 min-w-0">
               <span className="block text-[9px] uppercase tracking-widest font-mono text-muted-foreground leading-none">
-                Ubicación
+                Municipio
               </span>
-              <span className="block text-sm font-semibold truncate mt-0.5">
-                {cityFilter === "todas" ? "Todas las colonias" : cityFilter}
+              <span className="block text-sm font-semibold truncate mt-1">
+                {cityFilter === "todas" ? "Todos los municipios" : cityFilter}
               </span>
             </span>
-            <span className="text-[10px] font-mono text-muted-foreground shrink-0">
-              {cityFilter === "todas" ? totalInScope : (cityOptions.find((c) => c.name === cityFilter)?.count ?? 0)} jugadores
+            <span className="flex items-center gap-1 text-[10px] font-mono text-muted-foreground shrink-0 px-2 py-1 rounded-full bg-secondary/60">
+              <span className="font-bold text-foreground">
+                {cityFilter === "todas" ? totalInScope : (cityOptions.find((c) => c.name === cityFilter)?.count ?? 0)}
+              </span>
+              <span>jug.</span>
             </span>
             {cityFilter !== "todas" && (
               <span
                 role="button"
                 onClick={(e) => { e.stopPropagation(); setCityFilter("todas"); }}
                 className="flex items-center justify-center h-7 w-7 rounded-full border border-border text-muted-foreground hover:text-foreground hover:border-primary/50 shrink-0"
-                aria-label="Limpiar ubicación"
+                aria-label="Limpiar municipio"
               >
                 <X size={12} />
               </span>
@@ -369,11 +390,12 @@ export const ConectaHub = () => {
         </div>
 
         <Sheet open={cityOpen} onOpenChange={setCityOpen}>
-          <SheetContent side="bottom" className="bg-card border-border rounded-t-2xl p-0 max-h-[80vh] flex flex-col">
-            <SheetHeader className="px-5 pt-5 pb-3 text-left">
-              <SheetTitle className="font-display text-2xl leading-none">UBICACIÓN</SheetTitle>
+          <SheetContent side="bottom" className="bg-card border-border rounded-t-3xl p-0 max-h-[80vh] flex flex-col">
+            <div className="mx-auto mt-2.5 h-1 w-10 rounded-full bg-border" />
+            <SheetHeader className="px-5 pt-3 pb-3 text-left">
+              <SheetTitle className="font-display text-2xl leading-none">MUNICIPIO</SheetTitle>
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-mono">
-                // Filtra jugadores por colonia
+                // Filtra jugadores por municipio
               </p>
             </SheetHeader>
             <div className="px-5 pb-3">
@@ -382,7 +404,7 @@ export const ConectaHub = () => {
                 <input
                   value={citySearch}
                   onChange={(e) => setCitySearch(e.target.value)}
-                  placeholder="Buscar colonia..."
+                  placeholder="Buscar municipio..."
                   className="w-full h-10 pl-9 pr-3 rounded-full bg-background border border-border text-sm focus:outline-none focus:border-primary placeholder:text-muted-foreground"
                 />
               </div>
@@ -390,14 +412,14 @@ export const ConectaHub = () => {
             <div className="flex-1 overflow-y-auto px-3 pb-5">
               <button
                 onClick={() => { setCityFilter("todas"); setCityOpen(false); }}
-                className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-colors ${
                   cityFilter === "todas" ? "bg-primary/10 text-primary" : "hover:bg-secondary/60"
                 }`}
               >
                 <span className="flex items-center justify-center h-8 w-8 rounded-lg bg-secondary text-foreground shrink-0">
                   <MapPin size={14} />
                 </span>
-                <span className="flex-1 text-left text-sm font-semibold">Todas las colonias</span>
+                <span className="flex-1 text-left text-sm font-semibold">Todos los municipios</span>
                 <span className="text-[10px] font-mono text-muted-foreground">{totalInScope}</span>
                 {cityFilter === "todas" && <Check size={14} className="text-primary" />}
               </button>
@@ -411,7 +433,7 @@ export const ConectaHub = () => {
                     <button
                       key={c.name}
                       onClick={() => { setCityFilter(c.name); setCityOpen(false); }}
-                      className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                      className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-colors ${
                         active ? "bg-primary/10 text-primary" : "hover:bg-secondary/60"
                       }`}
                     >
@@ -430,69 +452,90 @@ export const ConectaHub = () => {
         </Sheet>
 
         {filtered.length === 0 ? (
-          <div className="mx-4 mt-4 rounded-md border border-dashed border-border p-6 text-center">
-            <Search size={20} className="mx-auto text-muted-foreground mb-2" />
-            <p className="text-xs text-muted-foreground">
-              No hay jugadores cerca con tu deporte y nivel. Prueba expandiendo tu búsqueda.
+          <div className="mx-4 mt-5 rounded-2xl border border-dashed border-border p-8 text-center">
+            <div className="mx-auto h-12 w-12 rounded-full bg-secondary/60 flex items-center justify-center mb-3">
+              <Search size={20} className="text-muted-foreground" />
+            </div>
+            <p className="text-sm font-semibold">Sin resultados</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Prueba con otro deporte o municipio.
             </p>
           </div>
         ) : (
-          <div className="mt-4 grid grid-cols-2 gap-3 px-4">
+          <div className="mt-5 grid grid-cols-2 gap-3 px-4">
             {filtered.map((p) => {
               const conn = connByPlayer[p.id];
               const status = conn?.status;
               return (
                 <div
                   key={p.id}
-                  className="rounded-md border border-border bg-card p-4 hover:border-primary transition-colors"
+                  className="group relative rounded-2xl border border-border bg-card p-4 hover:border-primary/60 hover:shadow-[0_0_0_1px_hsl(var(--primary)/0.4)] transition-all overflow-hidden"
                 >
-                  <div className="flex flex-col items-center text-center">
+                  {/* subtle gradient on hover */}
+                  <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-b from-primary/5 to-transparent" />
+
+                  <div className="relative flex flex-col items-center text-center">
                     <div className="relative">
-                      <Avatar seed={p.avatar_seed} size={56} name={p.display_name} />
-                      {p.online && <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-primary border-2 border-card glow-green" />}
+                      <div className={`p-0.5 rounded-full ${p.online ? "bg-gradient-to-br from-primary to-primary/40" : "bg-border"}`}>
+                        <div className="rounded-full bg-card p-0.5">
+                          <Avatar seed={p.avatar_seed} size={60} name={p.display_name} />
+                        </div>
+                      </div>
+                      {p.online && (
+                        <span className="absolute bottom-0.5 right-0.5 h-3 w-3 rounded-full bg-primary border-2 border-card glow-green" />
+                      )}
                     </div>
-                    <h3 className="font-display text-lg leading-none mt-2">{p.display_name}</h3>
-                    <p className="text-[11px] text-muted-foreground mt-0.5 truncate w-full">
-                      {p.colonia} · {p.distance_km} km
-                    </p>
-                    <div className="flex gap-1 mt-2 flex-wrap justify-center">
+
+                    <h3 className="font-display text-lg leading-none mt-3 truncate w-full">{p.display_name}</h3>
+
+                    <div className="flex items-center gap-1 mt-1.5 text-[10px] font-mono text-muted-foreground truncate w-full justify-center">
+                      <MapPin size={10} className="text-primary/70 shrink-0" />
+                      <span className="truncate">{p.colonia}</span>
+                      <span className="text-border">·</span>
+                      <span>{p.distance_km}km</span>
+                    </div>
+
+                    <div className="flex items-center gap-2 mt-2">
+                      <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-primary/10">
+                        <Star size={10} className="text-primary fill-primary" />
+                        <span className="text-[10px] font-bold font-mono text-primary">{p.rating.toFixed(1)}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-1 mt-2 flex-wrap justify-center min-h-[18px]">
                       {p.sports.slice(0, 2).map((s) => (
                         <span
                           key={s}
-                          className="px-1.5 py-0.5 rounded-sm text-[9px] font-bold uppercase tracking-widest font-mono border"
-                          style={{ color: sportColors[s] || "#fff", borderColor: `${sportColors[s] || "#fff"}55` }}
+                          className="px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-widest font-mono border"
+                          style={{ color: sportColors[s] || "#fff", borderColor: `${sportColors[s] || "#fff"}55`, background: `${sportColors[s] || "#fff"}10` }}
                         >
                           {s}
                         </span>
                       ))}
                     </div>
-                    <div className="flex items-center gap-1 mt-2 text-xs font-mono">
-                      <Star size={12} className="text-primary fill-primary" />
-                      <span>{p.rating.toFixed(1)}</span>
-                    </div>
                   </div>
 
-                  <div className="mt-3 space-y-1.5">
+                  <div className="relative mt-3 space-y-1.5">
                     {status === "accepted" ? (
                       <button
                         onClick={() => navigate(`/chat/${conn!.id}`)}
-                        className="w-full h-8 rounded-full border border-primary text-primary font-bold uppercase tracking-widest text-[10px] font-mono flex items-center justify-center gap-1 hover:bg-primary/10 transition-all duration-200"
+                        className="w-full h-9 rounded-full border border-primary text-primary font-bold uppercase tracking-widest text-[10px] font-mono flex items-center justify-center gap-1 hover:bg-primary/10 transition-all"
                       >
-                        <MessageCircle size={12} /> Chatear →
+                        <MessageCircle size={12} /> Chatear
                       </button>
                     ) : status === "pending" ? (
-                      <button disabled className="w-full h-8 rounded-full bg-secondary text-muted-foreground font-bold uppercase tracking-widest text-[10px] font-mono flex items-center justify-center gap-1 cursor-not-allowed transition-all duration-200">
-                        <Check size={12} /> Solicitud enviada
+                      <button disabled className="w-full h-9 rounded-full bg-secondary text-muted-foreground font-bold uppercase tracking-widest text-[10px] font-mono flex items-center justify-center gap-1 cursor-not-allowed">
+                        <Check size={12} /> Enviada
                       </button>
                     ) : (
                       <button
                         onClick={() => connect(p)}
-                        className="w-full h-8 rounded-full bg-primary text-primary-foreground font-bold uppercase tracking-widest text-[10px] font-mono glow-green hover:brightness-110 flex items-center justify-center gap-1 transition-all duration-200"
+                        className="w-full h-9 rounded-full bg-primary text-primary-foreground font-bold uppercase tracking-widest text-[10px] font-mono glow-green hover:brightness-110 flex items-center justify-center gap-1 transition-all"
                       >
                         <Zap size={12} className="fill-primary-foreground" /> Conectar
                       </button>
                     )}
-                    <button className="w-full h-8 rounded-full border border-border text-foreground hover:border-primary/40 font-bold uppercase tracking-widest text-[10px] font-mono flex items-center justify-center gap-1">
+                    <button className="w-full h-8 rounded-full border border-border text-muted-foreground hover:text-foreground hover:border-primary/40 font-bold uppercase tracking-widest text-[10px] font-mono flex items-center justify-center gap-1 transition-colors">
                       Ver perfil <ArrowRight size={11} />
                     </button>
                   </div>
@@ -503,15 +546,21 @@ export const ConectaHub = () => {
         )}
       </section>
 
-
       {/* Section C: Connections */}
-      <section className="px-4 pb-6">
-        <h2 className="font-display text-2xl leading-none">MIS CONEXIONES</h2>
-        <p className="mt-1 text-[10px] uppercase tracking-widest text-muted-foreground font-mono">
-          // Tu red en PlayOn
-        </p>
+      <section className="px-4 pb-8">
+        <div className="flex items-end justify-between">
+          <div>
+            <h2 className="font-display text-2xl leading-none">MIS CONEXIONES</h2>
+            <p className="mt-1 text-[10px] uppercase tracking-widest text-muted-foreground font-mono">
+              // Tu red en PlayOn
+            </p>
+          </div>
+          <span className="text-[10px] font-mono text-muted-foreground px-2 py-1 rounded-full bg-secondary/60">
+            {(acceptedPlayers.length || Math.min(5, players.length))} activos
+          </span>
+        </div>
 
-        <div className="mt-3 rounded border border-border bg-card divide-y divide-border">
+        <div className="mt-4 rounded-2xl border border-border bg-card divide-y divide-border overflow-hidden">
           {(() => {
             const list = acceptedPlayers.length > 0
               ? acceptedPlayers
@@ -521,22 +570,36 @@ export const ConectaHub = () => {
               const u = unread[conn.id] || 0;
               const isReal = acceptedPlayers.length > 0;
               return (
-                <div key={conn.id} className="flex items-center gap-3 p-3">
-                  <Avatar seed={player.avatar_seed} size={44} name={player.display_name} />
+                <div key={conn.id} className="flex items-center gap-3 p-3.5 hover:bg-secondary/30 transition-colors">
+                  <div className="relative shrink-0">
+                    <Avatar seed={player.avatar_seed} size={48} name={player.display_name} />
+                    {player.online && (
+                      <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-primary border-2 border-card glow-green" />
+                    )}
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold truncate">{player.display_name}</p>
-                    <p className="text-[11px] text-muted-foreground truncate">
-                      {player.colonia} · Última vez: {conn.last_played || "—"}
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold truncate">{player.display_name}</p>
+                      {u > 0 && (
+                        <span className="h-1.5 w-1.5 rounded-full bg-primary glow-green shrink-0" />
+                      )}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground truncate flex items-center gap-1">
+                      <MapPin size={10} className="text-primary/60 shrink-0" />
+                      {player.colonia} · {conn.last_played || "—"}
                     </p>
                     {last && (
-                      <p className="text-[12px] text-muted-foreground truncate mt-0.5">{last.body}</p>
+                      <p className={`text-[12px] truncate mt-0.5 ${u > 0 ? "text-foreground font-medium" : "text-muted-foreground"}`}>
+                        {last.body}
+                      </p>
                     )}
                   </div>
                   <button
                     onClick={() => isReal ? navigate(`/chat/${conn.id}`) : connect(player)}
-                    className="relative h-8 px-4 rounded-full border border-primary text-primary font-bold uppercase tracking-widest text-[10px] font-mono flex items-center gap-1.5 hover:bg-primary/10 transition-colors"
+                    className="relative h-9 w-9 rounded-full bg-primary/10 text-primary hover:bg-primary/20 flex items-center justify-center transition-colors shrink-0"
+                    aria-label="Chat"
                   >
-                    <MessageCircle size={12} /> Chat
+                    <MessageCircle size={15} />
                     {u > 0 && (
                       <span className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold font-mono flex items-center justify-center glow-green">
                         {u}
