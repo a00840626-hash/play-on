@@ -698,6 +698,155 @@ export const ConectaHub = () => {
         </div>
       </section>
 
+      {/* Player profile sheet */}
+      <Sheet open={!!profilePlayer} onOpenChange={(o) => !o && setProfilePlayer(null)}>
+        <SheetContent side="bottom" className="bg-card border-border rounded-t-3xl p-0 max-h-[90vh] flex flex-col">
+          <div className="mx-auto mt-2.5 h-1 w-10 rounded-full bg-border shrink-0" />
+          {profilePlayer && (() => {
+            const p = profilePlayer;
+            const conn = connByPlayer[p.id];
+            const status = conn?.status;
+            const sk = skillMeta(p.skill_level);
+            const matches = mockMatchesPlayed(p.id);
+            const ratingFull = Math.round(p.rating);
+            return (
+              <>
+                <SheetHeader className="px-5 pt-4 pb-0 text-left sr-only">
+                  <SheetTitle>{p.display_name}</SheetTitle>
+                </SheetHeader>
+                <div className="flex-1 overflow-y-auto px-5 pt-3 pb-28">
+                  {/* Header */}
+                  <div className="flex items-center gap-4">
+                    <div className={`p-0.5 rounded-full ${p.online ? "bg-gradient-to-br from-primary to-primary/40" : "bg-border"}`}>
+                      <div className="rounded-full bg-card p-0.5">
+                        <Avatar seed={p.avatar_seed} size={88} name={p.display_name} />
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      {p.online && (
+                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/15 text-primary text-[9px] font-bold font-mono uppercase tracking-widest mb-1.5">
+                          <span className="h-1.5 w-1.5 rounded-full bg-primary glow-green" /> En línea
+                        </span>
+                      )}
+                      <h3 className="font-display text-3xl leading-none truncate">{p.display_name}</h3>
+                      <div className="flex items-center gap-1 mt-2 text-[11px] font-mono text-muted-foreground">
+                        <MapPin size={11} className="text-primary/70 shrink-0" />
+                        <span className="truncate">{p.colonia}</span>
+                        <span className="text-border">·</span>
+                        <span>{p.distance_km}km</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Rating */}
+                  <div className="mt-5 flex items-center justify-between rounded-2xl border border-border bg-background/40 px-4 py-3">
+                    <div>
+                      <p className="text-[9px] uppercase tracking-widest font-mono text-muted-foreground">Rating</p>
+                      <p className="font-display text-3xl leading-none mt-1 text-primary">{p.rating.toFixed(1)}</p>
+                    </div>
+                    <div className="flex gap-0.5">
+                      {[1,2,3,4,5].map((i) => (
+                        <Star
+                          key={i}
+                          size={18}
+                          className={i <= ratingFull ? "text-primary fill-primary" : "text-border"}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Deportes */}
+                  <div className="mt-5">
+                    <p className="text-[9px] uppercase tracking-widest font-mono text-muted-foreground mb-2">Deportes</p>
+                    <div className="flex flex-wrap gap-2">
+                      {p.sports.map((s) => (
+                        <span
+                          key={s}
+                          className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest font-mono border"
+                          style={{ color: sportColors[s] || "#fff", borderColor: `${sportColors[s] || "#fff"}55`, background: `${sportColors[s] || "#fff"}10` }}
+                        >
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Stats */}
+                  <div className="mt-5 grid grid-cols-3 gap-2">
+                    <div className="rounded-2xl border border-border bg-background/40 px-3 py-3">
+                      <p className="text-[9px] uppercase tracking-widest font-mono text-muted-foreground">Nivel</p>
+                      <p className="font-display text-lg leading-none mt-1.5" style={{ color: sk.color }}>{sk.label}</p>
+                    </div>
+                    <div className="rounded-2xl border border-border bg-background/40 px-3 py-3">
+                      <p className="text-[9px] uppercase tracking-widest font-mono text-muted-foreground">Partidos</p>
+                      <p className="font-display text-lg leading-none mt-1.5">{matches}</p>
+                    </div>
+                    <div className="rounded-2xl border border-border bg-background/40 px-3 py-3">
+                      <p className="text-[9px] uppercase tracking-widest font-mono text-muted-foreground">Últ. partido</p>
+                      <p className="font-display text-lg leading-none mt-1.5">{conn?.last_played || "—"}</p>
+                    </div>
+                  </div>
+
+                  {/* Disponibilidad */}
+                  <div className="mt-5">
+                    <p className="text-[9px] uppercase tracking-widest font-mono text-muted-foreground mb-2">Disponibilidad</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {["lun","mar","mie","jue","vie","sab","dom"].map((d) => {
+                        const active = (p.availability || []).includes(d);
+                        return (
+                          <span
+                            key={d}
+                            className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest font-mono border ${
+                              active
+                                ? "border-primary/60 bg-primary/15 text-primary"
+                                : "border-border bg-background/40 text-muted-foreground"
+                            }`}
+                          >
+                            {dayLabels[d]}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Bio */}
+                  {p.bio && (
+                    <div className="mt-5">
+                      <p className="text-[9px] uppercase tracking-widest font-mono text-muted-foreground mb-2">Bio</p>
+                      <p className="text-sm text-foreground/90 leading-relaxed">{p.bio}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Sticky CTA */}
+                <div className="absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-card via-card to-card/80 border-t border-border">
+                  {status === "accepted" ? (
+                    <button
+                      onClick={() => { setProfilePlayer(null); navigate(`/chat/${conn!.id}`); }}
+                      className="w-full h-12 rounded-full border border-primary text-primary font-bold uppercase tracking-widest text-xs font-mono flex items-center justify-center gap-2 hover:bg-primary/10 transition-all"
+                    >
+                      <MessageCircle size={14} /> Chatear
+                    </button>
+                  ) : status === "pending" ? (
+                    <button disabled className="w-full h-12 rounded-full bg-secondary text-muted-foreground font-bold uppercase tracking-widest text-xs font-mono flex items-center justify-center gap-2 cursor-not-allowed">
+                      <Check size={14} /> Solicitud enviada
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => { connect(p); setProfilePlayer(null); }}
+                      className="w-full h-12 rounded-full bg-primary text-primary-foreground font-bold uppercase tracking-widest text-xs font-mono glow-green hover:brightness-110 flex items-center justify-center gap-2 transition-all"
+                    >
+                      <Zap size={14} className="fill-primary-foreground" /> Conectar
+                    </button>
+                  )}
+                </div>
+              </>
+            );
+          })()}
+        </SheetContent>
+      </Sheet>
+
+
       <AlertDialog open={!!confirmPlayer} onOpenChange={(o) => !o && setConfirmPlayer(null)}>
         <AlertDialogContent className="bg-card border-border">
           <AlertDialogHeader>
