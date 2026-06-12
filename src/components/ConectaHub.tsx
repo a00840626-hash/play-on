@@ -335,25 +335,99 @@ export const ConectaHub = () => {
           })}
         </div>
 
-        {/* City filter chips */}
-        <div className="mt-2 px-4 flex gap-2 overflow-x-auto no-scrollbar">
-          {cityOptions.map((c) => {
-            const active = cityFilter === c;
-            return (
+        {/* Location selector */}
+        <div className="mt-3 px-4">
+          <button
+            onClick={() => { setCitySearch(""); setCityOpen(true); }}
+            className="group w-full flex items-center gap-3 h-12 px-3 rounded-xl bg-card border border-border hover:border-primary/50 transition-colors text-left"
+          >
+            <span className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/15 text-primary shrink-0">
+              <MapPin size={16} />
+            </span>
+            <span className="flex-1 min-w-0">
+              <span className="block text-[9px] uppercase tracking-widest font-mono text-muted-foreground leading-none">
+                Ubicación
+              </span>
+              <span className="block text-sm font-semibold truncate mt-0.5">
+                {cityFilter === "todas" ? "Todas las colonias" : cityFilter}
+              </span>
+            </span>
+            <span className="text-[10px] font-mono text-muted-foreground shrink-0">
+              {cityFilter === "todas" ? totalInScope : (cityOptions.find((c) => c.name === cityFilter)?.count ?? 0)} jugadores
+            </span>
+            {cityFilter !== "todas" && (
+              <span
+                role="button"
+                onClick={(e) => { e.stopPropagation(); setCityFilter("todas"); }}
+                className="flex items-center justify-center h-7 w-7 rounded-full border border-border text-muted-foreground hover:text-foreground hover:border-primary/50 shrink-0"
+                aria-label="Limpiar ubicación"
+              >
+                <X size={12} />
+              </span>
+            )}
+          </button>
+        </div>
+
+        <Sheet open={cityOpen} onOpenChange={setCityOpen}>
+          <SheetContent side="bottom" className="bg-card border-border rounded-t-2xl p-0 max-h-[80vh] flex flex-col">
+            <SheetHeader className="px-5 pt-5 pb-3 text-left">
+              <SheetTitle className="font-display text-2xl leading-none">UBICACIÓN</SheetTitle>
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-mono">
+                // Filtra jugadores por colonia
+              </p>
+            </SheetHeader>
+            <div className="px-5 pb-3">
+              <div className="relative">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  value={citySearch}
+                  onChange={(e) => setCitySearch(e.target.value)}
+                  placeholder="Buscar colonia..."
+                  className="w-full h-10 pl-9 pr-3 rounded-full bg-background border border-border text-sm focus:outline-none focus:border-primary placeholder:text-muted-foreground"
+                />
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto px-3 pb-5">
               <button
-                key={c}
-                onClick={() => setCityFilter(c)}
-                className={`flex-shrink-0 h-7 px-3 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono border transition-colors ${
-                  active
-                    ? "bg-primary text-primary-foreground border-primary glow-green"
-                    : "border-border text-muted-foreground hover:text-foreground"
+                onClick={() => { setCityFilter("todas"); setCityOpen(false); }}
+                className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                  cityFilter === "todas" ? "bg-primary/10 text-primary" : "hover:bg-secondary/60"
                 }`}
               >
-                {c}
+                <span className="flex items-center justify-center h-8 w-8 rounded-lg bg-secondary text-foreground shrink-0">
+                  <MapPin size={14} />
+                </span>
+                <span className="flex-1 text-left text-sm font-semibold">Todas las colonias</span>
+                <span className="text-[10px] font-mono text-muted-foreground">{totalInScope}</span>
+                {cityFilter === "todas" && <Check size={14} className="text-primary" />}
               </button>
-            );
-          })}
-        </div>
+              <div className="my-2 h-px bg-border" />
+              {filteredCityOptions.length === 0 ? (
+                <p className="text-center text-xs text-muted-foreground py-8">Sin resultados</p>
+              ) : (
+                filteredCityOptions.map((c) => {
+                  const active = cityFilter === c.name;
+                  return (
+                    <button
+                      key={c.name}
+                      onClick={() => { setCityFilter(c.name); setCityOpen(false); }}
+                      className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
+                        active ? "bg-primary/10 text-primary" : "hover:bg-secondary/60"
+                      }`}
+                    >
+                      <span className="flex items-center justify-center h-8 w-8 rounded-lg bg-secondary text-foreground shrink-0">
+                        <MapPin size={14} />
+                      </span>
+                      <span className="flex-1 text-left text-sm font-semibold truncate">{c.name}</span>
+                      <span className="text-[10px] font-mono text-muted-foreground">{c.count}</span>
+                      {active && <Check size={14} className="text-primary" />}
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </SheetContent>
+        </Sheet>
 
         {filtered.length === 0 ? (
           <div className="mx-4 mt-4 rounded-md border border-dashed border-border p-6 text-center">
