@@ -160,6 +160,8 @@ export const ConectaHub = () => {
   const [unread, setUnread] = useState<Record<string, number>>({});
   const [sportFilter, setSportFilter] = useState<string>("todos");
   const [cityFilter, setCityFilter] = useState<string>("todas");
+  const [cityOpen, setCityOpen] = useState(false);
+  const [citySearch, setCitySearch] = useState("");
   const [confirmPlayer, setConfirmPlayer] = useState<DemoPlayer | null>(null);
   const [query, setQuery] = useState("");
 
