@@ -189,11 +189,33 @@ export const ConectaHub = () => {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const [{ data: ps }, { data: cs }] = await Promise.all([
-        supabase.from("demo_players").select("*").order("distance_km"),
+      // Fetch REAL onboarded users (excluding self) + existing demo connections in parallel
+      const [{ data: realProfiles }, { data: cs }] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("id, display_name, municipio, sports, rating, avatar_url, online, skill_level, availability, bio")
+          .eq("onboarded", true)
+          .neq("id", user.id)
+          .order("created_at", { ascending: false }),
         supabase.from("demo_connections").select("*").eq("user_id", user.id),
       ]);
-      setPlayers((ps as DemoPlayer[]) || []);
+
+      // Map real profiles to the DemoPlayer UI shape
+      const mapped: DemoPlayer[] = (realProfiles || []).map((p: any) => ({
+        id: p.id,
+        display_name: p.display_name || "Jugador",
+        colonia: p.municipio || "Monterrey",
+        distance_km: 0,
+        sports: p.sports || [],
+        rating: Number(p.rating ?? 4.5),
+        avatar_seed: p.avatar_url || p.id,
+        online: !!p.online,
+        bio: p.bio ?? null,
+        skill_level: (p.skill_level as any) ?? null,
+        availability: p.availability ?? [],
+      }));
+
+      setPlayers(mapped);
       setConns((cs as DemoConn[]) || []);
 
       const acceptedIds = (cs || []).filter((c) => c.status === "accepted").map((c) => c.id);
@@ -223,6 +245,7 @@ export const ConectaHub = () => {
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [user]);
+
 
   const connByPlayer = useMemo(() => {
     const m: Record<string, DemoConn> = {};
