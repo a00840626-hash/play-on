@@ -577,6 +577,24 @@ export const ConectaHub = () => {
                         </span>
                       ))}
                     </div>
+
+                    {/* Nivel */}
+                    {(() => {
+                      const sk = skillMeta(p.skill_level);
+                      return (
+                        <span
+                          className="mt-2 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-widest font-mono border"
+                          style={{ color: sk.color, borderColor: `${sk.color}55`, background: `${sk.color}10` }}
+                        >
+                          {sk.label}
+                        </span>
+                      );
+                    })()}
+
+                    {/* Disponibilidad */}
+                    <div className="mt-1.5 text-[9px] font-mono uppercase tracking-widest text-muted-foreground truncate w-full">
+                      {formatAvailability(p.availability)}
+                    </div>
                   </div>
 
                   <div className="relative mt-3 space-y-1.5">
@@ -599,7 +617,10 @@ export const ConectaHub = () => {
                         <Zap size={12} className="fill-primary-foreground" /> Conectar
                       </button>
                     )}
-                    <button className="w-full h-8 rounded-full border border-border text-muted-foreground hover:text-foreground hover:border-primary/40 font-bold uppercase tracking-widest text-[10px] font-mono flex items-center justify-center gap-1 transition-colors">
+                    <button
+                      onClick={() => setProfilePlayer(p)}
+                      className="w-full h-8 rounded-full border border-border text-muted-foreground hover:text-foreground hover:border-primary/40 font-bold uppercase tracking-widest text-[10px] font-mono flex items-center justify-center gap-1 transition-colors"
+                    >
                       Ver perfil <ArrowRight size={11} />
                     </button>
                   </div>
