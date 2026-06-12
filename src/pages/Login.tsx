@@ -77,7 +77,7 @@ const Login = () => {
       </div>
 
       <h1 className="font-display text-4xl mt-10 leading-none">
-        MONTERREY.<br />
+        HAZ AMIGOS.<br />
         JUEGA <span className="text-primary text-glow">MONTERREY</span>.
       </h1>
       <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
