@@ -158,6 +158,7 @@ export const ConectaHub = () => {
   const [lastMsgs, setLastMsgs] = useState<Record<string, LastMsg>>({});
   const [unread, setUnread] = useState<Record<string, number>>({});
   const [sportFilter, setSportFilter] = useState<string>("todos");
+  const [cityFilter, setCityFilter] = useState<string>("todas");
   const [confirmPlayer, setConfirmPlayer] = useState<DemoPlayer | null>(null);
   const [query, setQuery] = useState("");
 
@@ -244,9 +245,15 @@ export const ConectaHub = () => {
   };
 
   const sportOptions = ["todos", "futbol", "tenis", "padel", "running"];
+  const cityOptions = useMemo(() => {
+    const set = new Set<string>();
+    players.forEach((p) => p.colonia && set.add(p.colonia));
+    return ["todas", ...Array.from(set).sort()];
+  }, [players]);
   const q = query.trim().toLowerCase();
   const filtered = players
     .filter((p) => sportFilter === "todos" || p.sports.includes(sportFilter))
+    .filter((p) => cityFilter === "todas" || p.colonia === cityFilter)
     .filter((p) => !q || p.display_name.toLowerCase().includes(q) || p.colonia.toLowerCase().includes(q));
 
   const accepted = conns.filter((c) => c.status === "accepted");
@@ -306,6 +313,26 @@ export const ConectaHub = () => {
                 }`}
               >
                 {s}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* City filter chips */}
+        <div className="mt-2 px-4 flex gap-2 overflow-x-auto no-scrollbar">
+          {cityOptions.map((c) => {
+            const active = cityFilter === c;
+            return (
+              <button
+                key={c}
+                onClick={() => setCityFilter(c)}
+                className={`flex-shrink-0 h-7 px-3 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono border transition-colors ${
+                  active
+                    ? "bg-primary text-primary-foreground border-primary glow-green"
+                    : "border-border text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {c}
               </button>
             );
           })}
