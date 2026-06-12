@@ -249,10 +249,24 @@ export const ConectaHub = () => {
 
   const sportOptions = ["todos", "futbol", "tenis", "padel", "running"];
   const cityOptions = useMemo(() => {
-    const set = new Set<string>();
-    players.forEach((p) => p.colonia && set.add(p.colonia));
-    return ["todas", ...Array.from(set).sort()];
-  }, [players]);
+    const counts: Record<string, number> = {};
+    players.forEach((p) => {
+      if (!p.colonia) return;
+      const base = players.filter((x) => sportFilter === "todos" || x.sports.includes(sportFilter));
+      counts[p.colonia] = base.filter((x) => x.colonia === p.colonia).length;
+    });
+    return Object.entries(counts)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  }, [players, sportFilter]);
+  const totalInScope = useMemo(
+    () => players.filter((p) => sportFilter === "todos" || p.sports.includes(sportFilter)).length,
+    [players, sportFilter]
+  );
+  const filteredCityOptions = useMemo(() => {
+    const s = citySearch.trim().toLowerCase();
+    return s ? cityOptions.filter((c) => c.name.toLowerCase().includes(s)) : cityOptions;
+  }, [cityOptions, citySearch]);
   const q = query.trim().toLowerCase();
   const filtered = players
     .filter((p) => sportFilter === "todos" || p.sports.includes(sportFilter))
