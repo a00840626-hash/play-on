@@ -25,10 +25,10 @@ const Home = () => {
       {/* Hero greeting */}
       <section className="px-4 pt-5 animate-fade-up">
         <p className="text-xs uppercase tracking-widest text-muted-foreground font-mono">
-          Hola, Andrea
+          PlayOn · Monterrey
         </p>
         <h1 className="font-display text-4xl mt-1 leading-none">
-          EL JUEGO <span className="text-primary text-glow">EMPIEZA</span> AQUÍ
+          TU <span className="text-primary text-glow">COMUNIDAD</span><br />DEPORTIVA
         </h1>
       </section>
 
