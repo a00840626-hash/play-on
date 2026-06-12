@@ -166,6 +166,7 @@ export type Database = {
       }
       demo_players: {
         Row: {
+          availability: string[] | null
           avatar_seed: string
           bio: string | null
           colonia: string
@@ -174,9 +175,11 @@ export type Database = {
           id: string
           online: boolean | null
           rating: number
+          skill_level: string | null
           sports: string[]
         }
         Insert: {
+          availability?: string[] | null
           avatar_seed: string
           bio?: string | null
           colonia: string
@@ -185,9 +188,11 @@ export type Database = {
           id?: string
           online?: boolean | null
           rating?: number
+          skill_level?: string | null
           sports?: string[]
         }
         Update: {
+          availability?: string[] | null
           avatar_seed?: string
           bio?: string | null
           colonia?: string
@@ -196,6 +201,7 @@ export type Database = {
           id?: string
           online?: boolean | null
           rating?: number
+          skill_level?: string | null
           sports?: string[]
         }
         Relationships: []
