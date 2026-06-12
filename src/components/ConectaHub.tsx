@@ -415,7 +415,7 @@ export const ConectaHub = () => {
             </span>
             <span className="flex items-center gap-1 text-[10px] font-mono text-muted-foreground shrink-0 px-2 py-1 rounded-full bg-secondary/60">
               <span className="font-bold text-foreground">
-                {cityFilter === "todas" ? totalInScope : (cityOptions.find((c) => c.name === cityFilter)?.count ?? 0)}
+                {formatCount(cityFilter === "todas" ? totalInScope : (cityOptions.find((c) => c.name === cityFilter)?.count ?? 0))}
               </span>
               <span>jug.</span>
             </span>
