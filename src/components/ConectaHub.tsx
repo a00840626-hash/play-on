@@ -244,9 +244,15 @@ export const ConectaHub = () => {
   };
 
   const sportOptions = ["todos", "futbol", "tenis", "padel", "running"];
+  const cityOptions = useMemo(() => {
+    const set = new Set<string>();
+    players.forEach((p) => p.colonia && set.add(p.colonia));
+    return ["todas", ...Array.from(set).sort()];
+  }, [players]);
   const q = query.trim().toLowerCase();
   const filtered = players
     .filter((p) => sportFilter === "todos" || p.sports.includes(sportFilter))
+    .filter((p) => cityFilter === "todas" || p.colonia === cityFilter)
     .filter((p) => !q || p.display_name.toLowerCase().includes(q) || p.colonia.toLowerCase().includes(q));
 
   const accepted = conns.filter((c) => c.status === "accepted");
