@@ -325,21 +325,39 @@ export const ConectaHub = () => {
           <div className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-card via-card to-secondary/40 p-5">
             <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-primary/15 blur-3xl" />
             <div className="absolute -left-12 bottom-0 h-24 w-24 rounded-full bg-primary/10 blur-2xl" />
-            <div className="relative flex items-start justify-between gap-3">
-              <div>
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/15 text-primary text-[9px] font-bold font-mono uppercase tracking-widest">
-                  <Radio size={10} className="animate-pulse" /> En vivo
-                </span>
-                <h2 className="font-display text-3xl leading-none mt-2">JUGADORES</h2>
-                <p className="mt-1.5 text-[11px] uppercase tracking-widest text-muted-foreground font-mono">
-                  // Encuentra a tu próximo rival
-                </p>
+            <div className="relative">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/15 text-primary text-[9px] font-bold font-mono uppercase tracking-widest">
+                    <Radio size={10} className="animate-pulse" /> En vivo
+                  </span>
+                  <h2 className="font-display text-3xl leading-none mt-2">JUGADORES</h2>
+                  <p className="mt-1.5 text-[11px] uppercase tracking-widest text-muted-foreground font-mono">
+                    // Tu próximo rival está en la ZMM
+                  </p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="font-display text-3xl leading-none text-primary">{formatCount(ZMM_TOTAL)}</p>
+                  <p className="text-[9px] uppercase tracking-widest font-mono text-muted-foreground mt-1">
+                    activos · ZMM
+                  </p>
+                </div>
               </div>
-              <div className="text-right shrink-0">
-                <p className="font-display text-3xl leading-none text-primary">{totalInScope}</p>
-                <p className="text-[9px] uppercase tracking-widest font-mono text-muted-foreground mt-1">
-                  cerca de ti
-                </p>
+              <div className="mt-4 pt-4 border-t border-border/60 grid grid-cols-3 gap-3">
+                <div>
+                  <p className="font-display text-xl leading-none">{zmmMunicipios.length}</p>
+                  <p className="text-[9px] uppercase tracking-widest font-mono text-muted-foreground mt-1">municipios</p>
+                </div>
+                <div>
+                  <p className="font-display text-xl leading-none">{formatCount(totalInScope)}</p>
+                  <p className="text-[9px] uppercase tracking-widest font-mono text-muted-foreground mt-1">
+                    {sportFilter === "todos" ? "en tu deporte" : sportFilter}
+                  </p>
+                </div>
+                <div>
+                  <p className="font-display text-xl leading-none text-primary">{players.filter((p) => p.online).length}</p>
+                  <p className="text-[9px] uppercase tracking-widest font-mono text-muted-foreground mt-1">en línea</p>
+                </div>
               </div>
             </div>
           </div>
