@@ -318,6 +318,26 @@ export const ConectaHub = () => {
           })}
         </div>
 
+        {/* City filter chips */}
+        <div className="mt-2 px-4 flex gap-2 overflow-x-auto no-scrollbar">
+          {cityOptions.map((c) => {
+            const active = cityFilter === c;
+            return (
+              <button
+                key={c}
+                onClick={() => setCityFilter(c)}
+                className={`flex-shrink-0 h-7 px-3 rounded-full text-[10px] font-bold uppercase tracking-widest font-mono border transition-colors ${
+                  active
+                    ? "bg-primary text-primary-foreground border-primary glow-green"
+                    : "border-border text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {c}
+              </button>
+            );
+          })}
+        </div>
+
         {filtered.length === 0 ? (
           <div className="mx-4 mt-4 rounded-md border border-dashed border-border p-6 text-center">
             <Search size={20} className="mx-auto text-muted-foreground mb-2" />
