@@ -158,6 +158,7 @@ export const ConectaHub = () => {
   const [lastMsgs, setLastMsgs] = useState<Record<string, LastMsg>>({});
   const [unread, setUnread] = useState<Record<string, number>>({});
   const [sportFilter, setSportFilter] = useState<string>("todos");
+  const [cityFilter, setCityFilter] = useState<string>("todas");
   const [confirmPlayer, setConfirmPlayer] = useState<DemoPlayer | null>(null);
   const [query, setQuery] = useState("");
 
