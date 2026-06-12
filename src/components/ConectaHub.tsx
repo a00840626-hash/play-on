@@ -248,25 +248,50 @@ export const ConectaHub = () => {
   };
 
   const sportOptions = ["todos", "futbol", "tenis", "padel", "running"];
+
+  // Adultos deportivamente activos por municipio de la ZMM (estimaciones, miles)
+  const zmmMunicipios: { name: string; activos: number }[] = [
+    { name: "Monterrey", activos: 412000 },
+    { name: "Guadalupe", activos: 215000 },
+    { name: "Apodaca", activos: 198000 },
+    { name: "General Escobedo", activos: 172000 },
+    { name: "San Nicolás de los Garza", activos: 156000 },
+    { name: "Santa Catarina", activos: 124000 },
+    { name: "García", activos: 118000 },
+    { name: "Juárez", activos: 96000 },
+    { name: "San Pedro Garza García", activos: 78000 },
+    { name: "Cadereyta Jiménez", activos: 41000 },
+    { name: "Salinas Victoria", activos: 22000 },
+    { name: "Santiago", activos: 18000 },
+  ];
+  const ZMM_TOTAL = 1_550_000;
+
   const cityOptions = useMemo(() => {
-    const counts: Record<string, number> = {};
-    players.forEach((p) => {
-      if (!p.colonia) return;
-      const base = players.filter((x) => sportFilter === "todos" || x.sports.includes(sportFilter));
-      counts[p.colonia] = base.filter((x) => x.colonia === p.colonia).length;
-    });
-    return Object.entries(counts)
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+    const sportShare = sportFilter === "todos" ? 1 : 0.28; // share of activos por deporte
+    return zmmMunicipios
+      .map((m) => {
+        const demoExtra = players.filter(
+          (p) => p.colonia === m.name && (sportFilter === "todos" || p.sports.includes(sportFilter))
+        ).length;
+        return { name: m.name, count: Math.round(m.activos * sportShare) + demoExtra };
+      })
+      .sort((a, b) => b.count - a.count);
   }, [players, sportFilter]);
-  const totalInScope = useMemo(
-    () => players.filter((p) => sportFilter === "todos" || p.sports.includes(sportFilter)).length,
-    [players, sportFilter]
-  );
+
+  const totalInScope = useMemo(() => {
+    return cityOptions.reduce((sum, c) => sum + c.count, 0);
+  }, [cityOptions]);
+
   const filteredCityOptions = useMemo(() => {
     const s = citySearch.trim().toLowerCase();
     return s ? cityOptions.filter((c) => c.name.toLowerCase().includes(s)) : cityOptions;
   }, [cityOptions, citySearch]);
+
+  const formatCount = (n: number) => {
+    if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(2)}M`;
+    if (n >= 1_000) return `${(n / 1_000).toFixed(n >= 10_000 ? 0 : 1)}K`;
+    return String(n);
+  };
   const q = query.trim().toLowerCase();
   const filtered = players
     .filter((p) => sportFilter === "todos" || p.sports.includes(sportFilter))
@@ -300,21 +325,39 @@ export const ConectaHub = () => {
           <div className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-card via-card to-secondary/40 p-5">
             <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-primary/15 blur-3xl" />
             <div className="absolute -left-12 bottom-0 h-24 w-24 rounded-full bg-primary/10 blur-2xl" />
-            <div className="relative flex items-start justify-between gap-3">
-              <div>
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/15 text-primary text-[9px] font-bold font-mono uppercase tracking-widest">
-                  <Radio size={10} className="animate-pulse" /> En vivo
-                </span>
-                <h2 className="font-display text-3xl leading-none mt-2">JUGADORES</h2>
-                <p className="mt-1.5 text-[11px] uppercase tracking-widest text-muted-foreground font-mono">
-                  // Encuentra a tu próximo rival
-                </p>
+            <div className="relative">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/15 text-primary text-[9px] font-bold font-mono uppercase tracking-widest">
+                    <Radio size={10} className="animate-pulse" /> En vivo
+                  </span>
+                  <h2 className="font-display text-3xl leading-none mt-2">JUGADORES</h2>
+                  <p className="mt-1.5 text-[11px] uppercase tracking-widest text-muted-foreground font-mono">
+                    // Tu próximo rival está en la ZMM
+                  </p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="font-display text-3xl leading-none text-primary">{formatCount(ZMM_TOTAL)}</p>
+                  <p className="text-[9px] uppercase tracking-widest font-mono text-muted-foreground mt-1">
+                    activos · ZMM
+                  </p>
+                </div>
               </div>
-              <div className="text-right shrink-0">
-                <p className="font-display text-3xl leading-none text-primary">{totalInScope}</p>
-                <p className="text-[9px] uppercase tracking-widest font-mono text-muted-foreground mt-1">
-                  cerca de ti
-                </p>
+              <div className="mt-4 pt-4 border-t border-border/60 grid grid-cols-3 gap-3">
+                <div>
+                  <p className="font-display text-xl leading-none">{zmmMunicipios.length}</p>
+                  <p className="text-[9px] uppercase tracking-widest font-mono text-muted-foreground mt-1">municipios</p>
+                </div>
+                <div>
+                  <p className="font-display text-xl leading-none">{formatCount(totalInScope)}</p>
+                  <p className="text-[9px] uppercase tracking-widest font-mono text-muted-foreground mt-1">
+                    {sportFilter === "todos" ? "en tu deporte" : sportFilter}
+                  </p>
+                </div>
+                <div>
+                  <p className="font-display text-xl leading-none text-primary">{players.filter((p) => p.online).length}</p>
+                  <p className="text-[9px] uppercase tracking-widest font-mono text-muted-foreground mt-1">en línea</p>
+                </div>
               </div>
             </div>
           </div>
@@ -372,7 +415,7 @@ export const ConectaHub = () => {
             </span>
             <span className="flex items-center gap-1 text-[10px] font-mono text-muted-foreground shrink-0 px-2 py-1 rounded-full bg-secondary/60">
               <span className="font-bold text-foreground">
-                {cityFilter === "todas" ? totalInScope : (cityOptions.find((c) => c.name === cityFilter)?.count ?? 0)}
+                {formatCount(cityFilter === "todas" ? totalInScope : (cityOptions.find((c) => c.name === cityFilter)?.count ?? 0))}
               </span>
               <span>jug.</span>
             </span>
@@ -420,7 +463,7 @@ export const ConectaHub = () => {
                   <MapPin size={14} />
                 </span>
                 <span className="flex-1 text-left text-sm font-semibold">Todos los municipios</span>
-                <span className="text-[10px] font-mono text-muted-foreground">{totalInScope}</span>
+                <span className="text-[10px] font-mono text-muted-foreground">{formatCount(totalInScope)}</span>
                 {cityFilter === "todas" && <Check size={14} className="text-primary" />}
               </button>
               <div className="my-2 h-px bg-border" />
@@ -441,7 +484,7 @@ export const ConectaHub = () => {
                         <MapPin size={14} />
                       </span>
                       <span className="flex-1 text-left text-sm font-semibold truncate">{c.name}</span>
-                      <span className="text-[10px] font-mono text-muted-foreground">{c.count}</span>
+                      <span className="text-[10px] font-mono text-muted-foreground">{formatCount(c.count)}</span>
                       {active && <Check size={14} className="text-primary" />}
                     </button>
                   );
