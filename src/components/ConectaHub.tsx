@@ -183,6 +183,7 @@ export const ConectaHub = () => {
   const [cityOpen, setCityOpen] = useState(false);
   const [citySearch, setCitySearch] = useState("");
   const [confirmPlayer, setConfirmPlayer] = useState<DemoPlayer | null>(null);
+  const [profilePlayer, setProfilePlayer] = useState<DemoPlayer | null>(null);
   const [query, setQuery] = useState("");
 
   useEffect(() => {
