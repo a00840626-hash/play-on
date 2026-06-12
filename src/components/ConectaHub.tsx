@@ -484,7 +484,7 @@ export const ConectaHub = () => {
                         <MapPin size={14} />
                       </span>
                       <span className="flex-1 text-left text-sm font-semibold truncate">{c.name}</span>
-                      <span className="text-[10px] font-mono text-muted-foreground">{c.count}</span>
+                      <span className="text-[10px] font-mono text-muted-foreground">{formatCount(c.count)}</span>
                       {active && <Check size={14} className="text-primary" />}
                     </button>
                   );
