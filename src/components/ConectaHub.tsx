@@ -34,7 +34,27 @@ interface DemoPlayer {
   rating: number;
   avatar_seed: string;
   online: boolean;
+  bio?: string | null;
+  skill_level?: "principiante" | "intermedio" | "avanzado" | null;
+  availability?: string[] | null;
 }
+
+const dayLabels: Record<string, string> = {
+  lun: "Lun", mar: "Mar", mie: "Mié", jue: "Jue", vie: "Vie", sab: "Sáb", dom: "Dom",
+};
+const formatAvailability = (days?: string[] | null) =>
+  (days && days.length ? days.map((d) => dayLabels[d] || d).join(" · ") : "Flexible");
+
+const skillMeta = (level?: string | null) => {
+  switch (level) {
+    case "principiante": return { label: "Principiante", color: "#3D9CFF" };
+    case "avanzado": return { label: "Avanzado", color: "#FF3D00" };
+    case "intermedio": return { label: "Intermedio", color: "#00FF87" };
+    default: return { label: "Sin nivel", color: "#888" };
+  }
+};
+
+const mockMatchesPlayed = (id: string) => 12 + (hashSeed(id) % 69);
 
 interface DemoConn {
   id: string;
