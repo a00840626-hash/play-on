@@ -250,38 +250,53 @@ export type Database = {
       }
       profiles: {
         Row: {
+          availability: string[] | null
           avatar_url: string | null
+          bio: string | null
           colonia: string | null
           created_at: string
           display_name: string
           distance_km: number | null
           id: string
+          municipio: string | null
+          onboarded: boolean
           online: boolean | null
           rating: number | null
+          skill_level: string | null
           sports: string[] | null
           updated_at: string
         }
         Insert: {
+          availability?: string[] | null
           avatar_url?: string | null
+          bio?: string | null
           colonia?: string | null
           created_at?: string
           display_name?: string
           distance_km?: number | null
           id: string
+          municipio?: string | null
+          onboarded?: boolean
           online?: boolean | null
           rating?: number | null
+          skill_level?: string | null
           sports?: string[] | null
           updated_at?: string
         }
         Update: {
+          availability?: string[] | null
           avatar_url?: string | null
+          bio?: string | null
           colonia?: string | null
           created_at?: string
           display_name?: string
           distance_km?: number | null
           id?: string
+          municipio?: string | null
+          onboarded?: boolean
           online?: boolean | null
           rating?: number | null
+          skill_level?: string | null
           sports?: string[] | null
           updated_at?: string
         }
