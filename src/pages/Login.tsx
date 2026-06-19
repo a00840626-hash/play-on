@@ -146,6 +146,14 @@ const Login = () => {
             <>{mode === "signup" ? "Crear cuenta" : "Entrar"} <ArrowRight size={16} /></>
           )}
         </button>
+
+        {mode === "signin" && (
+          <div className="text-right">
+            <Link to="/forgot-password" className="text-[11px] font-mono text-muted-foreground hover:text-primary underline">
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </div>
+        )}
       </form>
 
       <div className="my-5 flex items-center gap-3">
