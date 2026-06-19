@@ -172,7 +172,9 @@ const Login = () => {
       </button>
 
       <p className="mt-6 text-center text-[11px] font-mono text-muted-foreground">
-        Al continuar aceptas los términos de PlayOn.
+        Al continuar aceptas los{" "}
+        <Link to="/terms" className="text-primary underline">Términos</Link> y la{" "}
+        <Link to="/privacy" className="text-primary underline">Política de privacidad</Link>.
       </p>
       <Link to="/" className="mt-3 text-center text-[11px] font-mono text-muted-foreground underline">
         Volver al inicio
