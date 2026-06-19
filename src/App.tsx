@@ -80,6 +80,7 @@ const App = () => (
               <Route path="/community" element={<RequireAuth><Community /></RequireAuth>} />
               <Route path="/chat/:connectionId" element={<RequireAuth><Chat /></RequireAuth>} />
               <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
+              <Route path="/profile/edit" element={<RequireAuth><ProfileEdit /></RequireAuth>} />
               <Route path="/owner" element={<RequireAuth><OwnerDashboard /></RequireAuth>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
