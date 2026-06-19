@@ -16,15 +16,20 @@ import MatchDetail from "./pages/MatchDetail";
 import NewMatch from "./pages/NewMatch";
 import Community from "./pages/Community";
 import Profile from "./pages/Profile";
+import ProfileEdit from "./pages/ProfileEdit";
 import OwnerDashboard from "./pages/OwnerDashboard";
 import Chat from "./pages/Chat";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Terms from "./pages/Terms";
 import { DeviceFrame } from "./components/playon/DeviceFrame";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
 const queryClient = new QueryClient();
 
-const PUBLIC_PATHS = new Set(["/login"]);
+const PUBLIC_PATHS = new Set(["/login", "/forgot-password", "/reset-password", "/privacy", "/terms"]);
 
 const RequireAuth = ({ children }: { children: ReactNode }) => {
   const { user, loading } = useAuth();
@@ -61,6 +66,10 @@ const App = () => (
           <DeviceFrame>
             <Routes>
               <Route path="/login" element={<Login />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<Terms />} />
               <Route path="/onboarding" element={<RequireAuth><Onboarding /></RequireAuth>} />
               <Route path="/" element={<RequireAuth><Home /></RequireAuth>} />
               <Route path="/courts" element={<RequireAuth><Courts /></RequireAuth>} />
@@ -71,6 +80,7 @@ const App = () => (
               <Route path="/community" element={<RequireAuth><Community /></RequireAuth>} />
               <Route path="/chat/:connectionId" element={<RequireAuth><Chat /></RequireAuth>} />
               <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
+              <Route path="/profile/edit" element={<RequireAuth><ProfileEdit /></RequireAuth>} />
               <Route path="/owner" element={<RequireAuth><OwnerDashboard /></RequireAuth>} />
               <Route path="*" element={<NotFound />} />
             </Routes>

@@ -1,117 +1,174 @@
-import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, MapPin, Star, Clock, MessageCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { ArrowLeft, MapPin, Users, Clock, Loader2, Trash2 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
-import { SportBadge } from "@/components/SportBadge";
-import { openMatches, courts } from "@/data/mock";
-import { toast } from "sonner";
+import { InitialsAvatar } from "@/components/InitialsAvatar";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "@/hooks/use-toast";
+
+interface Participant { user_id: string; display_name: string | null }
+interface MatchRow {
+  id: string; host_id: string; sport: string; title: string; starts_at: string;
+  duration_minutes: number; location: string | null; max_players: number; skill_level: string | null;
+  price_per_player: number; notes: string | null; court_id: string | null;
+  court: { name: string; address: string } | null;
+}
 
 const MatchDetail = () => {
   const { id } = useParams();
-  const match = openMatches.find((m) => m.id === id);
-  const court = match ? courts.find((c) => c.id === match.courtId) : null;
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [match, setMatch] = useState<MatchRow | null>(null);
+  const [hostName, setHostName] = useState<string | null>(null);
+  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [acting, setActing] = useState(false);
 
-  if (!match || !court) {
-    return (
-      <AppShell>
-        <div className="p-8 text-center text-muted-foreground">
-          Partido no encontrado. <Link to="/" className="text-primary">Volver</Link>
-        </div>
-      </AppShell>
-    );
-  }
+  const load = async () => {
+    if (!id) return;
+    const { data: m } = await supabase.from("matches")
+      .select("*, court:courts(name, address)").eq("id", id).maybeSingle();
+    if (!m) { setLoading(false); return; }
+    setMatch(m as any);
+    const { data: p } = await supabase.from("match_participants").select("user_id").eq("match_id", id);
+    const userIds = Array.from(new Set([(m as any).host_id, ...(p ?? []).map((x) => x.user_id)]));
+    const { data: profs } = await supabase.from("profiles").select("id, display_name").in("id", userIds);
+    const nameById = new Map((profs ?? []).map((pr) => [pr.id, pr.display_name]));
+    setHostName(nameById.get((m as any).host_id) ?? null);
+    setParticipants((p ?? []).map((x) => ({ user_id: x.user_id, display_name: nameById.get(x.user_id) ?? null })));
+    setLoading(false);
+  };
 
-  const spotsLeft = match.max - match.current;
+  useEffect(() => { load(); }, [id]);
+
+  if (loading) return <AppShell><div className="p-10 text-center"><Loader2 className="animate-spin text-primary mx-auto" /></div></AppShell>;
+  if (!match) return <AppShell><div className="p-8 text-center text-muted-foreground">Partido no encontrado. <Link to="/matches" className="text-primary">Volver</Link></div></AppShell>;
+
+  const d = new Date(match.starts_at);
+  const dateStr = d.toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long" });
+  const timeStr = d.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
+  const isHost = user?.id === match.host_id;
+  const joined = participants.some((p) => p.user_id === user?.id);
+  const spotsLeft = match.max_players - participants.length;
+
+  const join = async () => {
+    if (!user) return;
+    setActing(true);
+    const { error } = await supabase.from("match_participants").insert({ match_id: match.id, user_id: user.id });
+    setActing(false);
+    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+    toast({ title: "¡Te uniste al partido!" });
+    load();
+  };
+  const leave = async () => {
+    if (!user) return;
+    setActing(true);
+    await supabase.from("match_participants").delete().eq("match_id", match.id).eq("user_id", user.id);
+    setActing(false);
+    toast({ title: "Saliste del partido" });
+    load();
+  };
+  const cancel = async () => {
+    if (!confirm("¿Cancelar este partido? Esto borra las inscripciones.")) return;
+    setActing(true);
+    await supabase.from("matches").delete().eq("id", match.id);
+    setActing(false);
+    toast({ title: "Partido cancelado" });
+    navigate("/matches");
+  };
 
   return (
-    <AppShell subtitle="Partido abierto">
-      <div className="relative">
-        <img src={court.image} alt={court.name} width={1280} height={896} className="w-full aspect-[16/9] object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-        <Link to="/" className="absolute top-3 left-3 h-10 w-10 rounded-full bg-background/80 backdrop-blur flex items-center justify-center border border-border">
+    <AppShell subtitle="Partido">
+      <div className="px-4 pt-3 flex items-center justify-between">
+        <Link to="/matches" className="h-10 w-10 rounded-full bg-card border border-border flex items-center justify-center">
           <ArrowLeft size={18} />
         </Link>
-        <div className="absolute bottom-4 left-4 right-4">
-          <SportBadge sport={match.sport} />
-          <h1 className="font-display text-3xl mt-2 leading-none">
-            {match.date} · <span className="text-primary">{match.time}</span>
-          </h1>
-        </div>
+        {isHost && (
+          <button onClick={cancel} className="h-10 px-3 rounded bg-card border border-destructive/40 text-destructive text-xs font-bold uppercase tracking-wider flex items-center gap-1">
+            <Trash2 size={14} /> Cancelar
+          </button>
+        )}
       </div>
+
+      <section className="px-4 mt-4">
+        <p className="text-xs uppercase tracking-widest font-mono text-primary">{match.sport}</p>
+        <h1 className="font-display text-4xl leading-none mt-1">{match.title}</h1>
+        <p className="text-sm text-muted-foreground capitalize mt-2">{dateStr} · {timeStr}</p>
+      </section>
 
       <section className="px-4 mt-5 grid grid-cols-2 gap-3">
-        <Stat label="Jugadores" value={`${match.current}/${match.max}`} accent />
-        <Stat label="Lugares libres" value={String(spotsLeft)} />
-        <Stat label="Nivel" value={match.skill} mono />
-        <Stat label="Por jugador" value={`$${match.pricePerPlayer}`} accent />
+        <Stat label="Jugadores" value={`${participants.length}/${match.max_players}`} accent />
+        <Stat label="Lugares libres" value={String(Math.max(spotsLeft, 0))} />
+        <Stat label="Nivel" value={match.skill_level ?? "—"} />
+        <Stat label="Por jugador" value={match.price_per_player > 0 ? `$${match.price_per_player}` : "Gratis"} accent />
       </section>
 
-      <section className="px-4 mt-6">
-        <h2 className="font-display text-xl leading-none mb-3">Cancha</h2>
-        <Link to={`/courts/${court.id}`} className="flex items-center gap-3 rounded border border-border bg-card p-3 hover:border-primary/50 transition-colors">
-          <img src={court.image} alt={court.name} width={1280} height={896} className="h-16 w-20 object-cover rounded-sm" />
-          <div className="flex-1 min-w-0">
-            <p className="font-display text-lg leading-tight">{court.name}</p>
-            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-              <MapPin size={11} /> {court.neighborhood}
-            </p>
+      {(match.court || match.location) && (
+        <section className="px-4 mt-6">
+          <h2 className="font-display text-xl leading-none mb-3">Lugar</h2>
+          <div className="rounded border border-border bg-card p-3 flex items-center gap-3">
+            <MapPin size={18} className="text-primary shrink-0" />
+            <div className="min-w-0">
+              {match.court && <p className="font-display text-lg leading-tight">{match.court.name}</p>}
+              <p className="text-xs text-muted-foreground truncate">{match.court?.address ?? match.location}</p>
+            </div>
           </div>
-          <Clock size={18} className="text-primary" />
-        </Link>
-      </section>
+        </section>
+      )}
 
       <section className="px-4 mt-6">
-        <h2 className="font-display text-xl leading-none mb-3">Anfitrión</h2>
-        <div className="flex items-center gap-3 rounded border border-border bg-card p-3">
-          <div className="h-12 w-12 rounded-full bg-gradient-primary flex items-center justify-center text-primary-foreground font-display text-xl">
-            {match.hostName[0]}
-          </div>
-          <div className="flex-1">
-            <p className="font-semibold">{match.hostName}</p>
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <Star size={11} className="fill-primary text-primary" /> {match.hostRating} · 28 partidos
-            </p>
-          </div>
+        <h2 className="font-display text-xl leading-none mb-3 flex items-center gap-2"><Users size={18} /> Jugadores</h2>
+        <div className="space-y-2">
+          <PlayerRow name={hostName ?? "Anfitrión"} label="ANFITRIÓN" />
+          {participants.filter((p) => p.user_id !== match.host_id).map((p) => (
+            <PlayerRow key={p.user_id} name={p.display_name ?? "Jugador"} />
+          ))}
         </div>
       </section>
 
-      <section className="px-4 mt-6">
-        <h2 className="font-display text-xl leading-none mb-3 flex items-center gap-2">
-          <MessageCircle size={18} className="text-primary" /> Chat del grupo
-        </h2>
-        <div className="rounded border border-border bg-card p-4 space-y-2">
-          <ChatBubble who="Diego R." text="¡Vamos por la victoria! 💪" />
-          <ChatBubble who="Luis M." text="Yo llevo el balón." mine={false} />
-        </div>
-      </section>
+      {match.notes && (
+        <section className="px-4 mt-6">
+          <h2 className="font-display text-xl leading-none mb-2 flex items-center gap-2"><Clock size={16} /> Notas</h2>
+          <p className="text-sm text-muted-foreground rounded border border-border bg-card p-3">{match.notes}</p>
+        </section>
+      )}
 
-      <div className="fixed bottom-[72px] inset-x-0 z-40 px-4 py-3 border-t border-border backdrop-blur-md bg-background/85">
-        <div className="mx-auto max-w-screen-md">
-          <button
-            onClick={() => toast.success("¡Te uniste al partido!", { description: `${match.courtName} · ${match.time}` })}
-            className="w-full h-12 rounded-sm bg-primary text-primary-foreground font-bold uppercase tracking-widest text-sm glow-green hover:glow-green-strong transition-all active:scale-[0.98]"
-          >
-            Unirme al partido — ${match.pricePerPlayer}
-          </button>
+      {!isHost && (
+        <div className="fixed bottom-[72px] inset-x-0 z-40 px-4 py-3 border-t border-border backdrop-blur-md bg-background/85">
+          <div className="mx-auto max-w-screen-md">
+            {joined ? (
+              <button onClick={leave} disabled={acting}
+                className="w-full h-12 rounded-sm bg-card border border-destructive text-destructive font-bold uppercase tracking-widest text-sm">
+                {acting ? "..." : "Salir del partido"}
+              </button>
+            ) : (
+              <button onClick={join} disabled={acting || spotsLeft <= 0}
+                className="w-full h-12 rounded-sm bg-primary text-primary-foreground font-bold uppercase tracking-widest text-sm glow-green hover:brightness-110 disabled:opacity-50">
+                {acting ? "..." : spotsLeft <= 0 ? "Cupo lleno" : `Unirme${match.price_per_player > 0 ? ` — $${match.price_per_player}` : ""}`}
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+      )}
+      <div className="h-20" />
     </AppShell>
   );
 };
 
-const Stat = ({ label, value, accent, mono }: { label: string; value: string; accent?: boolean; mono?: boolean }) => (
+const Stat = ({ label, value, accent }: { label: string; value: string; accent?: boolean }) => (
   <div className="rounded border border-border bg-card p-3">
     <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-mono">{label}</p>
-    <p className={`mt-1 font-display text-2xl leading-none ${accent ? "text-primary" : "text-foreground"} ${mono ? "capitalize" : ""}`}>
-      {value}
-    </p>
+    <p className={`mt-1 font-display text-2xl leading-none capitalize ${accent ? "text-primary" : "text-foreground"}`}>{value}</p>
   </div>
 );
 
-const ChatBubble = ({ who, text, mine = true }: { who: string; text: string; mine?: boolean }) => (
-  <div className={`flex ${mine ? "justify-start" : "justify-end"}`}>
-    <div className={`max-w-[80%] rounded-sm px-3 py-2 text-sm ${mine ? "bg-secondary" : "bg-primary/15 border border-primary/30"}`}>
-      <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-mono">{who}</p>
-      <p>{text}</p>
+const PlayerRow = ({ name, label }: { name: string; label?: string }) => (
+  <div className="flex items-center gap-3 rounded border border-border bg-card p-3">
+    <InitialsAvatar name={name} size={40} />
+    <div className="flex-1 min-w-0">
+      <p className="font-semibold text-sm truncate">{name}</p>
+      {label && <p className="text-[10px] uppercase tracking-widest font-mono text-primary">{label}</p>}
     </div>
   </div>
 );

@@ -1,165 +1,135 @@
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Star, MapPin, Car, Droplet, Lightbulb, Coffee, Building2, Users as UsersIcon, type LucideIcon } from "lucide-react";
+import { ArrowLeft, MapPin, Loader2, Building2 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
-import { SportBadge } from "@/components/SportBadge";
-import { courts } from "@/data/mock";
-import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "@/hooks/use-toast";
 
-const amenityIcons: Record<string, LucideIcon> = {
-  Estacionamiento: Car,
-  Regaderas: Droplet,
-  Iluminación: Lightbulb,
-  Cafetería: Coffee,
-  Techado: Building2,
-  Gradas: UsersIcon,
-  "Pro Shop": Building2,
+interface Court {
+  id: string; name: string; sport: string; address: string; municipio: string | null;
+  price_per_hour: number; amenities: string[]; description: string | null;
+}
+
+const SPORT_ICON: Record<string, string> = {
+  futbol: "⚽", tenis: "🎾", padel: "🎾", basquetbol: "🏀", pickleball: "🥒", voleibol: "🏐",
 };
 
 const CourtDetail = () => {
   const { id } = useParams();
-  const court = courts.find((c) => c.id === id);
+  const { user } = useAuth();
+  const [court, setCourt] = useState<Court | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("18:00");
+  const [duration, setDuration] = useState(60);
+  const [booking, setBooking] = useState(false);
 
-  if (!court) {
-    return (
-      <AppShell>
-        <div className="p-8 text-center">
-          <p className="text-muted-foreground">Cancha no encontrada.</p>
-          <Link to="/" className="text-primary text-sm mt-3 inline-block">← Volver</Link>
-        </div>
-      </AppShell>
-    );
-  }
+  useEffect(() => {
+    if (!id) return;
+    supabase.from("courts").select("*").eq("id", id).maybeSingle().then(({ data }) => {
+      setCourt(data as Court); setLoading(false);
+    });
+  }, [id]);
+
+  const book = async () => {
+    if (!user || !court) return;
+    if (!date) { toast({ title: "Elige fecha", variant: "destructive" }); return; }
+    setBooking(true);
+    const starts_at = new Date(`${date}T${time}`).toISOString();
+    const total = court.price_per_hour * (duration / 60);
+    const { error } = await supabase.from("bookings").insert({
+      court_id: court.id, user_id: user.id, starts_at, duration_minutes: duration,
+      total_price: total, status: "pending", payment_method: "on_site",
+    });
+    setBooking(false);
+    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+    toast({ title: "¡Reserva creada!", description: `Pago en sitio: $${total}` });
+  };
+
+  if (loading) return <AppShell><div className="p-10 text-center"><Loader2 className="animate-spin text-primary mx-auto" /></div></AppShell>;
+  if (!court) return <AppShell><div className="p-8 text-center text-muted-foreground">Cancha no encontrada. <Link to="/courts" className="text-primary">Volver</Link></div></AppShell>;
+
+  const total = court.price_per_hour * (duration / 60);
 
   return (
-    <AppShell subtitle={court.neighborhood}>
-      {/* Hero */}
-      <div className="relative">
-        <img
-          src={court.image}
-          alt={court.name}
-          width={1280}
-          height={896}
-          className="w-full aspect-[4/3] object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
-        <Link
-          to="/"
-          className="absolute top-3 left-3 h-10 w-10 rounded-full bg-background/80 backdrop-blur flex items-center justify-center border border-border"
-          aria-label="Volver"
-        >
+    <AppShell subtitle={court.municipio ?? court.name}>
+      <div className="px-4 pt-3">
+        <Link to="/courts" className="inline-flex h-10 w-10 rounded-full bg-card border border-border items-center justify-center">
           <ArrowLeft size={18} />
         </Link>
-        <div className="absolute bottom-4 left-4 right-4">
-          <SportBadge sport={court.sport} />
-          <h1 className="font-display text-4xl mt-2 leading-none">{court.name}</h1>
-          <div className="mt-2 flex items-center gap-4 text-sm text-foreground/90">
-            <span className="flex items-center gap-1">
-              <Star size={14} className="fill-primary text-primary" />
-              <span className="font-semibold">{court.rating}</span>
-              <span className="text-muted-foreground">({court.reviewCount})</span>
-            </span>
-            <span className="flex items-center gap-1 text-muted-foreground">
-              <MapPin size={14} /> {court.distanceKm} km
-            </span>
-          </div>
-        </div>
       </div>
 
-      {/* Address */}
-      <section className="px-4 mt-5">
-        <p className="text-xs uppercase tracking-widest text-muted-foreground font-mono">Dirección</p>
-        <p className="text-sm mt-1">{court.address}, Monterrey</p>
+      <section className="px-4 mt-4">
+        <div className="flex items-start gap-3">
+          <div className="h-16 w-16 rounded bg-primary/10 border border-primary/40 flex items-center justify-center text-3xl">
+            {SPORT_ICON[court.sport] ?? "🏟️"}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs uppercase tracking-widest font-mono text-primary">{court.sport}</p>
+            <h1 className="font-display text-3xl leading-tight mt-1">{court.name}</h1>
+            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1"><MapPin size={11} /> {court.address}</p>
+          </div>
+        </div>
       </section>
 
-      {/* Amenities */}
+      {court.description && (
+        <section className="px-4 mt-5">
+          <p className="text-sm text-muted-foreground">{court.description}</p>
+        </section>
+      )}
+
       <section className="px-4 mt-6">
         <h2 className="font-display text-xl leading-none mb-3">Amenidades</h2>
         <div className="flex flex-wrap gap-2">
-          {court.amenities.map((a) => {
-            const Icon = amenityIcons[a] ?? Building2;
-            return (
-              <span
-                key={a}
-                className="inline-flex items-center gap-1.5 h-9 px-3 rounded-sm bg-card border border-border text-xs"
-              >
-                <Icon size={14} className="text-primary" /> {a}
-              </span>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Slots */}
-      <section className="px-4 mt-6">
-        <h2 className="font-display text-xl leading-none mb-3">Horarios disponibles hoy</h2>
-        <div className="grid grid-cols-4 gap-2">
-          {court.slots.map((s) => (
-            <button
-              key={s.time}
-              disabled={!s.available}
-              className={`h-12 rounded-sm border font-mono text-sm font-semibold transition-all ${
-                s.available
-                  ? "bg-card border-border hover:border-primary hover:text-primary"
-                  : "bg-secondary/40 border-border text-muted-foreground line-through cursor-not-allowed"
-              }`}
-            >
-              {s.time}
-            </button>
+          {court.amenities.map((a) => (
+            <span key={a} className="inline-flex items-center gap-1.5 h-9 px-3 rounded-sm bg-card border border-border text-xs">
+              <Building2 size={14} className="text-primary" /> {a}
+            </span>
           ))}
         </div>
       </section>
 
-      {/* Map placeholder */}
-      <section className="px-4 mt-6">
-        <h2 className="font-display text-xl leading-none mb-3">Ubicación</h2>
-        <div className="aspect-[16/9] rounded border border-border bg-card flex items-center justify-center">
-          <div className="text-center">
-            <MapPin size={32} className="text-primary mx-auto" />
-            <p className="text-xs text-muted-foreground mt-2 font-mono">{court.neighborhood}, MTY</p>
+      <section className="px-4 mt-6 pb-32">
+        <h2 className="font-display text-xl leading-none mb-3">Reservar</h2>
+        <div className="space-y-3 rounded border border-border bg-card p-4">
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Fecha"><input type="date" value={date} onChange={(e) => setDate(e.target.value)}
+              className="w-full h-11 px-3 rounded bg-background border border-border focus:border-primary focus:outline-none text-sm font-mono" /></Field>
+            <Field label="Hora"><input type="time" value={time} onChange={(e) => setTime(e.target.value)}
+              className="w-full h-11 px-3 rounded bg-background border border-border focus:border-primary focus:outline-none text-sm font-mono" /></Field>
+          </div>
+          <Field label="Duración (min)">
+            <select value={duration} onChange={(e) => setDuration(Number(e.target.value))}
+              className="w-full h-11 px-3 rounded bg-background border border-border focus:border-primary focus:outline-none text-sm">
+              {[60, 90, 120, 180].map((m) => <option key={m} value={m}>{m} min</option>)}
+            </select>
+          </Field>
+          <div className="flex items-center justify-between pt-3 border-t border-border">
+            <span className="text-xs uppercase tracking-widest font-mono text-muted-foreground">Total a pagar en sitio</span>
+            <span className="font-display text-2xl text-primary">${total}</span>
           </div>
         </div>
       </section>
 
-      {/* Reviews */}
-      <section className="px-4 mt-6">
-        <h2 className="font-display text-xl leading-none mb-3">Reseñas</h2>
-        <div className="space-y-3">
-          {[
-            { name: "Mariana L.", rating: 5, text: "Excelente cancha, muy bien iluminada y siempre limpia." },
-            { name: "Jorge T.", rating: 4, text: "Buen lugar, fácil de llegar. El estacionamiento se llena." },
-          ].map((r, i) => (
-            <div key={i} className="rounded border border-border bg-card p-3">
-              <div className="flex items-center justify-between">
-                <span className="font-semibold text-sm">{r.name}</span>
-                <span className="flex items-center gap-0.5">
-                  {Array.from({ length: r.rating }).map((_, k) => (
-                    <Star key={k} size={12} className="fill-primary text-primary" />
-                  ))}
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">{r.text}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Sticky CTA */}
-      <div className="fixed bottom-[72px] inset-x-0 z-40 bg-gradient-dark px-4 py-3 border-t border-border backdrop-blur-md bg-background/85">
-        <div className="mx-auto max-w-screen-md flex items-center gap-3">
-          <div>
-            <div className="font-display text-2xl text-primary leading-none">${court.pricePerHour}</div>
-            <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-mono">por hora</div>
-          </div>
-          <button
-            onClick={() => toast.success("¡Reserva confirmada!", { description: `${court.name} · 18:00` })}
-            className="flex-1 h-12 rounded-sm bg-primary text-primary-foreground font-bold uppercase tracking-widest text-sm glow-green hover:glow-green-strong transition-all active:scale-[0.98]"
-          >
-            Reservar
+      <div className="fixed bottom-[72px] inset-x-0 z-40 px-4 py-3 border-t border-border backdrop-blur-md bg-background/85">
+        <div className="mx-auto max-w-screen-md">
+          <button onClick={book} disabled={booking}
+            className="w-full h-12 rounded-sm bg-primary text-primary-foreground font-bold uppercase tracking-widest text-sm glow-green hover:brightness-110 disabled:opacity-50">
+            {booking ? "..." : `Reservar — $${total}`}
           </button>
+          <p className="text-[10px] text-center font-mono text-muted-foreground mt-1.5">El pago se realiza en sitio</p>
         </div>
       </div>
     </AppShell>
   );
 };
+
+const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
+  <label className="block">
+    <span className="block text-[10px] uppercase tracking-widest text-muted-foreground font-mono mb-1.5">{label}</span>
+    {children}
+  </label>
+);
 
 export default CourtDetail;

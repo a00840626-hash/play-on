@@ -146,6 +146,14 @@ const Login = () => {
             <>{mode === "signup" ? "Crear cuenta" : "Entrar"} <ArrowRight size={16} /></>
           )}
         </button>
+
+        {mode === "signin" && (
+          <div className="text-right">
+            <Link to="/forgot-password" className="text-[11px] font-mono text-muted-foreground hover:text-primary underline">
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </div>
+        )}
       </form>
 
       <div className="my-5 flex items-center gap-3">
@@ -164,7 +172,9 @@ const Login = () => {
       </button>
 
       <p className="mt-6 text-center text-[11px] font-mono text-muted-foreground">
-        Al continuar aceptas los términos de PlayOn.
+        Al continuar aceptas los{" "}
+        <Link to="/terms" className="text-primary underline">Términos</Link> y la{" "}
+        <Link to="/privacy" className="text-primary underline">Política de privacidad</Link>.
       </p>
       <Link to="/" className="mt-3 text-center text-[11px] font-mono text-muted-foreground underline">
         Volver al inicio

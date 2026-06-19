@@ -43,6 +43,56 @@ export type Database = {
           },
         ]
       }
+      bookings: {
+        Row: {
+          court_id: string
+          created_at: string
+          duration_minutes: number
+          id: string
+          notes: string | null
+          payment_method: string
+          starts_at: string
+          status: string
+          total_price: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          court_id: string
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          notes?: string | null
+          payment_method?: string
+          starts_at: string
+          status?: string
+          total_price?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          court_id?: string
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          notes?: string | null
+          payment_method?: string
+          starts_at?: string
+          status?: string
+          total_price?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_court_id_fkey"
+            columns: ["court_id"]
+            isOneToOne: false
+            referencedRelation: "courts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       connections: {
         Row: {
           created_at: string
@@ -87,6 +137,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      courts: {
+        Row: {
+          address: string
+          amenities: string[]
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          lat: number | null
+          lng: number | null
+          municipio: string | null
+          name: string
+          owner_id: string | null
+          price_per_hour: number
+          sport: string
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          amenities?: string[]
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          lat?: number | null
+          lng?: number | null
+          municipio?: string | null
+          name: string
+          owner_id?: string | null
+          price_per_hour?: number
+          sport: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          amenities?: string[]
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          lat?: number | null
+          lng?: number | null
+          municipio?: string | null
+          name?: string
+          owner_id?: string | null
+          price_per_hour?: number
+          sport?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       demo_connections: {
         Row: {
@@ -206,6 +310,92 @@ export type Database = {
         }
         Relationships: []
       }
+      match_participants: {
+        Row: {
+          id: string
+          joined_at: string
+          match_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          match_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          match_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_participants_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      matches: {
+        Row: {
+          court_id: string | null
+          created_at: string
+          duration_minutes: number
+          host_id: string
+          id: string
+          location: string | null
+          max_players: number
+          notes: string | null
+          price_per_player: number
+          skill_level: string | null
+          sport: string
+          starts_at: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          court_id?: string | null
+          created_at?: string
+          duration_minutes?: number
+          host_id: string
+          id?: string
+          location?: string | null
+          max_players?: number
+          notes?: string | null
+          price_per_player?: number
+          skill_level?: string | null
+          sport: string
+          starts_at: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          court_id?: string | null
+          created_at?: string
+          duration_minutes?: number
+          host_id?: string
+          id?: string
+          location?: string | null
+          max_players?: number
+          notes?: string | null
+          price_per_player?: number
+          skill_level?: string | null
+          sport?: string
+          starts_at?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           body: string
@@ -247,6 +437,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          link: string | null
+          read_at: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {

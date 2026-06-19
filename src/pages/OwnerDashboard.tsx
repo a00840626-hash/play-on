@@ -1,26 +1,58 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, TrendingUp, Calendar, Star, DollarSign } from "lucide-react";
+import { ArrowLeft, Calendar, DollarSign, Check, X, Loader2 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
-import { courts } from "@/data/mock";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "@/hooks/use-toast";
 
-const occupancyByDay = [
-  { day: "L", pct: 65 },
-  { day: "M", pct: 72 },
-  { day: "X", pct: 80 },
-  { day: "J", pct: 78 },
-  { day: "V", pct: 92 },
-  { day: "S", pct: 98 },
-  { day: "D", pct: 88 },
-];
-
-const upcomingBookings = [
-  { id: "b1", court: "Fan Soccer", time: "Hoy · 18:00", who: "Diego R.", price: 650 },
-  { id: "b2", court: "Fan Soccer", time: "Hoy · 19:00", who: "Mariana L.", price: 650 },
-  { id: "b3", court: "Fan Soccer", time: "Mañana · 16:00", who: "Carlos V.", price: 650 },
-];
+interface Court { id: string; name: string; price_per_hour: number }
+interface Booking {
+  id: string; court_id: string; user_id: string; starts_at: string; duration_minutes: number;
+  total_price: number; status: string;
+  display_name: string | null;
+  courts: { name: string } | null;
+}
 
 const OwnerDashboard = () => {
-  const myCourt = courts[0];
+  const { user } = useAuth();
+  const [courts, setCourts] = useState<Court[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = async () => {
+    if (!user) return;
+    const { data: cs } = await supabase.from("courts").select("id, name, price_per_hour").eq("owner_id", user.id);
+    setCourts((cs as Court[]) ?? []);
+    const ids = (cs ?? []).map((c) => c.id);
+    if (ids.length) {
+      const { data: bs } = await supabase.from("bookings")
+        .select("*, courts(name)")
+        .in("court_id", ids).order("starts_at", { ascending: true });
+      const userIds = Array.from(new Set((bs ?? []).map((b: any) => b.user_id)));
+      const { data: profs } = userIds.length
+        ? await supabase.from("profiles").select("id, display_name").in("id", userIds)
+        : { data: [] as any[] };
+      const nameById = new Map((profs ?? []).map((p: any) => [p.id, p.display_name]));
+      setBookings(((bs as any) ?? []).map((b: any) => ({ ...b, display_name: nameById.get(b.user_id) ?? null })));
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => { load(); }, [user]);
+
+  const setStatus = async (id: string, status: string) => {
+    await supabase.from("bookings").update({ status }).eq("id", id);
+    toast({ title: `Reserva ${status === "confirmed" ? "confirmada" : "rechazada"}` });
+    load();
+  };
+
+  const monthRevenue = bookings
+    .filter((b) => b.status === "confirmed" && new Date(b.starts_at).getMonth() === new Date().getMonth())
+    .reduce((sum, b) => sum + Number(b.total_price), 0);
+
+  if (loading) return <AppShell><div className="p-10 text-center"><Loader2 className="animate-spin text-primary mx-auto" /></div></AppShell>;
+
   return (
     <AppShell subtitle="Dueño · Dashboard">
       <div className="px-4 pt-3 flex items-center gap-3">
@@ -28,128 +60,83 @@ const OwnerDashboard = () => {
           <ArrowLeft size={18} />
         </Link>
         <div>
-          <p className="text-xs uppercase tracking-widest text-muted-foreground font-mono">Cancha</p>
-          <h1 className="font-display text-3xl leading-none">{myCourt.name.toUpperCase()}</h1>
+          <p className="text-xs uppercase tracking-widest text-muted-foreground font-mono">Dueño</p>
+          <h1 className="font-display text-3xl leading-none">DASHBOARD</h1>
         </div>
       </div>
 
-      {/* Revenue hero */}
-      <section className="px-4 mt-5">
-        <div className="relative overflow-hidden rounded border border-primary/40 bg-card p-5">
-          <div className="absolute -right-8 -top-8 h-36 w-36 rounded-full bg-primary/20 blur-3xl" />
-          <div className="relative">
-            <p className="text-xs uppercase tracking-widest text-muted-foreground font-mono flex items-center gap-1.5">
-              <DollarSign size={12} /> Ingresos del mes
-            </p>
-            <p className="font-display text-6xl text-primary leading-none mt-2 text-glow">
-              $48,250
-            </p>
-            <p className="text-xs text-muted-foreground font-mono mt-2 flex items-center gap-1">
-              <TrendingUp size={12} className="text-primary" />
-              <span className="text-primary">+18%</span> vs mes anterior
-            </p>
+      {courts.length === 0 ? (
+        <section className="px-4 mt-8">
+          <div className="rounded border border-dashed border-border p-8 text-center">
+            <p className="text-sm text-muted-foreground">Aún no eres dueño de ninguna cancha.</p>
+            <p className="text-xs text-muted-foreground mt-2">Próximamente: registra tu cancha desde la app.</p>
           </div>
-        </div>
-      </section>
-
-      {/* Occupancy chart */}
-      <section className="px-4 mt-6">
-        <h2 className="font-display text-xl leading-none mb-3">Ocupación esta semana</h2>
-        <div className="rounded border border-border bg-card p-4">
-          <div className="flex items-end justify-between gap-2 h-32">
-            {occupancyByDay.map((d) => (
-              <div key={d.day} className="flex-1 flex flex-col items-center gap-1.5">
-                <div className="w-full flex-1 flex items-end">
-                  <div
-                    className="w-full rounded-sm bg-gradient-primary"
-                    style={{ height: `${d.pct}%` }}
-                    title={`${d.pct}%`}
-                  />
-                </div>
-                <span className="text-[10px] font-mono text-muted-foreground uppercase">{d.day}</span>
+        </section>
+      ) : (
+        <>
+          <section className="px-4 mt-5">
+            <div className="relative overflow-hidden rounded border border-primary/40 bg-card p-5">
+              <div className="absolute -right-8 -top-8 h-36 w-36 rounded-full bg-primary/20 blur-3xl" />
+              <div className="relative">
+                <p className="text-xs uppercase tracking-widest text-muted-foreground font-mono flex items-center gap-1.5">
+                  <DollarSign size={12} /> Ingresos del mes (confirmadas)
+                </p>
+                <p className="font-display text-6xl text-primary leading-none mt-2 text-glow">${monthRevenue.toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground font-mono mt-2">{courts.length} {courts.length === 1 ? "cancha" : "canchas"} activas</p>
               </div>
-            ))}
-          </div>
-          <div className="mt-3 flex items-center justify-between text-xs font-mono">
-            <span className="text-muted-foreground">Promedio</span>
-            <span className="text-primary font-bold">82%</span>
-          </div>
-        </div>
-      </section>
+            </div>
+          </section>
 
-      {/* Upcoming */}
-      <section className="px-4 mt-6">
-        <div className="flex items-end justify-between mb-3">
-          <h2 className="font-display text-xl leading-none flex items-center gap-2">
-            <Calendar size={18} className="text-primary" /> Próximas reservas
-          </h2>
-          <button className="text-[10px] uppercase tracking-widest font-mono text-primary">Ver todas</button>
-        </div>
-        <div className="rounded border border-border bg-card divide-y divide-border">
-          {upcomingBookings.map((b) => (
-            <div key={b.id} className="p-3 flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-sm font-semibold truncate">{b.who}</p>
-                <p className="text-[11px] text-muted-foreground font-mono">{b.time}</p>
+          <section className="px-4 mt-6">
+            <h2 className="font-display text-xl leading-none mb-3 flex items-center gap-2">
+              <Calendar size={18} className="text-primary" /> Reservas
+            </h2>
+            {bookings.length === 0 ? (
+              <div className="rounded border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                Aún no hay reservas.
               </div>
-              <span className="font-mono text-sm text-primary">${b.price}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Pricing toggle */}
-      <section className="px-4 mt-6">
-        <h2 className="font-display text-xl leading-none mb-3">Precios</h2>
-        <div className="rounded border border-border bg-card p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-semibold">Precios dinámicos</p>
-              <p className="text-[11px] text-muted-foreground">Ajusta automáticamente por demanda</p>
-            </div>
-            <Toggle />
-          </div>
-          <div className="flex items-center justify-between pt-3 border-t border-border">
-            <span className="text-sm">Precio base por hora</span>
-            <span className="font-mono text-sm">
-              <span className="text-primary">${myCourt.pricePerHour}</span>
-              <span className="text-muted-foreground">/hr</span>
-            </span>
-          </div>
-        </div>
-      </section>
-
-      {/* Reviews */}
-      <section className="px-4 mt-6 mb-8">
-        <h2 className="font-display text-xl leading-none mb-3 flex items-center gap-2">
-          <Star size={18} className="text-primary fill-primary" /> Reseñas recientes
-        </h2>
-        <div className="space-y-2">
-          {[
-            { name: "Mariana L.", text: "Increíble cancha, regreso seguro." },
-            { name: "Jorge T.", text: "Buen servicio. Iluminación top." },
-          ].map((r, i) => (
-            <div key={i} className="rounded border border-border bg-card p-3">
-              <p className="text-sm font-semibold">{r.name}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{r.text}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+            ) : (
+              <div className="space-y-2">
+                {bookings.map((b) => {
+                  const d = new Date(b.starts_at);
+                  const dStr = d.toLocaleDateString("es-MX", { weekday: "short", day: "numeric", month: "short" });
+                  const tStr = d.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
+                  return (
+                    <div key={b.id} className="rounded border border-border bg-card p-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-sm truncate">{b.display_name ?? "Jugador"}</p>
+                          <p className="text-[11px] text-muted-foreground font-mono">{b.courts?.name} · {dStr} {tStr} · {b.duration_minutes}min</p>
+                        </div>
+                        <span className="font-mono text-sm text-primary">${b.total_price}</span>
+                      </div>
+                      <div className="flex items-center justify-between mt-2.5">
+                        <span className={`text-[10px] uppercase tracking-wider font-mono px-2 py-1 rounded ${
+                          b.status === "confirmed" ? "bg-primary/15 text-primary" :
+                          b.status === "rejected" ? "bg-destructive/15 text-destructive" :
+                          "bg-muted text-muted-foreground"
+                        }`}>{b.status}</span>
+                        {b.status === "pending" && (
+                          <div className="flex gap-2">
+                            <button onClick={() => setStatus(b.id, "rejected")} className="h-8 px-2 rounded border border-destructive/40 text-destructive text-xs flex items-center gap-1">
+                              <X size={12} /> Rechazar
+                            </button>
+                            <button onClick={() => setStatus(b.id, "confirmed")} className="h-8 px-2 rounded bg-primary text-primary-foreground text-xs font-bold flex items-center gap-1">
+                              <Check size={12} /> Confirmar
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        </>
+      )}
+      <div className="h-8" />
     </AppShell>
-  );
-};
-
-const Toggle = () => {
-  return (
-    <button
-      type="button"
-      onClick={(e) => e.currentTarget.classList.toggle("on")}
-      className="relative h-6 w-11 rounded-full bg-secondary border border-border [&.on]:bg-primary transition-colors group"
-      aria-label="Activar precios dinámicos"
-    >
-      <span className="absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-foreground transition-transform group-[.on]:translate-x-5 group-[.on]:bg-primary-foreground" />
-    </button>
   );
 };
 
