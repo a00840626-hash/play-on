@@ -120,9 +120,9 @@ const MatchDetail = () => {
       <section className="px-4 mt-6">
         <h2 className="font-display text-xl leading-none mb-3 flex items-center gap-2"><Users size={18} /> Jugadores</h2>
         <div className="space-y-2">
-          <PlayerRow name={match.host_profile?.display_name ?? "Anfitrión"} label="ANFITRIÓN" />
+          <PlayerRow name={hostName ?? "Anfitrión"} label="ANFITRIÓN" />
           {participants.filter((p) => p.user_id !== match.host_id).map((p) => (
-            <PlayerRow key={p.user_id} name={p.profiles?.display_name ?? "Jugador"} />
+            <PlayerRow key={p.user_id} name={p.display_name ?? "Jugador"} />
           ))}
         </div>
       </section>
