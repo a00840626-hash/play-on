@@ -105,7 +105,7 @@ const OwnerDashboard = () => {
                     <div key={b.id} className="rounded border border-border bg-card p-3">
                       <div className="flex items-center justify-between gap-3">
                         <div className="min-w-0 flex-1">
-                          <p className="font-semibold text-sm truncate">{b.profiles?.display_name ?? "Jugador"}</p>
+                          <p className="font-semibold text-sm truncate">{b.display_name ?? "Jugador"}</p>
                           <p className="text-[11px] text-muted-foreground font-mono">{b.courts?.name} · {dStr} {tStr} · {b.duration_minutes}min</p>
                         </div>
                         <span className="font-mono text-sm text-primary">${b.total_price}</span>
