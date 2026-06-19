@@ -7,12 +7,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 
-interface Participant { user_id: string; profiles: { display_name: string | null } | null }
+interface Participant { user_id: string; display_name: string | null }
 interface MatchRow {
   id: string; host_id: string; sport: string; title: string; starts_at: string;
   duration_minutes: number; location: string | null; max_players: number; skill_level: string | null;
   price_per_player: number; notes: string | null; court_id: string | null;
-  host_profile: { display_name: string | null } | null;
   court: { name: string; address: string } | null;
 }
 
@@ -21,18 +20,23 @@ const MatchDetail = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [match, setMatch] = useState<MatchRow | null>(null);
+  const [hostName, setHostName] = useState<string | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState(false);
 
   const load = async () => {
     if (!id) return;
-    const [{ data: m }, { data: p }] = await Promise.all([
-      supabase.from("matches").select("*, host_profile:profiles!matches_host_id_fkey(display_name), court:courts(name, address)").eq("id", id).maybeSingle(),
-      supabase.from("match_participants").select("user_id, profiles(display_name)").eq("match_id", id),
-    ]);
+    const { data: m } = await supabase.from("matches")
+      .select("*, court:courts(name, address)").eq("id", id).maybeSingle();
+    if (!m) { setLoading(false); return; }
     setMatch(m as any);
-    setParticipants((p as any) ?? []);
+    const { data: p } = await supabase.from("match_participants").select("user_id").eq("match_id", id);
+    const userIds = Array.from(new Set([(m as any).host_id, ...(p ?? []).map((x) => x.user_id)]));
+    const { data: profs } = await supabase.from("profiles").select("id, display_name").in("id", userIds);
+    const nameById = new Map((profs ?? []).map((pr) => [pr.id, pr.display_name]));
+    setHostName(nameById.get((m as any).host_id) ?? null);
+    setParticipants((p ?? []).map((x) => ({ user_id: x.user_id, display_name: nameById.get(x.user_id) ?? null })));
     setLoading(false);
   };
 
