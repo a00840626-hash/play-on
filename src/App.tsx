@@ -66,6 +66,10 @@ const App = () => (
           <DeviceFrame>
             <Routes>
               <Route path="/login" element={<Login />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<Terms />} />
               <Route path="/onboarding" element={<RequireAuth><Onboarding /></RequireAuth>} />
               <Route path="/" element={<RequireAuth><Home /></RequireAuth>} />
               <Route path="/courts" element={<RequireAuth><Courts /></RequireAuth>} />
