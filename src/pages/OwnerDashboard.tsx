@@ -10,7 +10,7 @@ interface Court { id: string; name: string; price_per_hour: number }
 interface Booking {
   id: string; court_id: string; user_id: string; starts_at: string; duration_minutes: number;
   total_price: number; status: string;
-  profiles: { display_name: string | null } | null;
+  display_name: string | null;
   courts: { name: string } | null;
 }
 
@@ -27,9 +27,14 @@ const OwnerDashboard = () => {
     const ids = (cs ?? []).map((c) => c.id);
     if (ids.length) {
       const { data: bs } = await supabase.from("bookings")
-        .select("*, profiles(display_name), courts(name)")
+        .select("*, courts(name)")
         .in("court_id", ids).order("starts_at", { ascending: true });
-      setBookings((bs as any) ?? []);
+      const userIds = Array.from(new Set((bs ?? []).map((b: any) => b.user_id)));
+      const { data: profs } = userIds.length
+        ? await supabase.from("profiles").select("id, display_name").in("id", userIds)
+        : { data: [] as any[] };
+      const nameById = new Map((profs ?? []).map((p: any) => [p.id, p.display_name]));
+      setBookings(((bs as any) ?? []).map((b: any) => ({ ...b, display_name: nameById.get(b.user_id) ?? null })));
     }
     setLoading(false);
   };
