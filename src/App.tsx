@@ -29,7 +29,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const queryClient = new QueryClient();
 
-const PUBLIC_PATHS = new Set(["/login"]);
+const PUBLIC_PATHS = new Set(["/login", "/forgot-password", "/reset-password", "/privacy", "/terms"]);
 
 const RequireAuth = ({ children }: { children: ReactNode }) => {
   const { user, loading } = useAuth();
