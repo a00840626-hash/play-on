@@ -1,49 +1,64 @@
-# Mejoras Sección Conecta
+# PlayOn — Plan para App Store Submission
 
-## 1. Modelo de datos (`demo_players`)
+## Estado actual
+- ✅ Auth real Supabase (email/password + Google)
+- ✅ Onboarding (nombre, foto, municipio, deportes, nivel, disponibilidad)
+- ✅ Tablas reales: `profiles`, `connections`, `messages`, `badges`, `signups`
+- ✅ Tablas demo: `demo_players/connections/messages` (visibles a todos los autenticados hoy)
+- ✅ Capacitor configurado (appId, appName)
+- ⚠️ `Matches`, `Courts`, `Profile`, `OwnerDashboard` usan 100% mock data
+- ⚠️ `ConectaHub` mezcla perfiles reales + demos
+- ⚠️ Sin recuperar contraseña, sin storage para fotos (base64 en DB)
+- ⚠️ Sin íconos/splash nativos, sin Info.plist con permisos
 
-Migración SQL para añadir dos columnas:
+---
 
-- `skill_level text` — valores: `'principiante' | 'intermedio' | 'avanzado'`
-- `availability text[]` — días, ej. `{'sab','dom'}`
+## Fase 1 — Auth + Perfiles completos
+1. Página `/reset-password` + flujo "Olvidé contraseña" en Login
+2. Storage bucket `avatars` (público) — subir foto en onboarding y perfil
+3. Página `/profile/edit` para editar datos del onboarding
+4. `Profile.tsx` lee del perfil real del usuario (no Andrea Posadas hardcodeada)
+5. Cerrar sesión funcional + eliminar cuenta
+6. Confirmar email obligatorio ya está activo
 
-Después un UPDATE por id (o determinístico via hash del id) que asigna valores variados a los jugadores demo existentes, para que cada card muestre algo plausible.
+## Fase 2 — Comunidad real (separar de demo)
+1. `ConectaHub` muestra **solo perfiles reales** cuando el usuario está autenticado
+2. Conexiones reales usan tabla `connections` (no `demo_connections`)
+3. Chat real usa tabla `messages` (no `demo_messages`)
+4. Demos se mantienen solo en la landing pública (Home)
+5. Búsqueda por municipio + deporte real
+6. Realtime para nuevos mensajes + solicitudes de conexión
 
-Actualizar la interfaz `DemoPlayer` en `ConectaHub.tsx` con los dos campos nuevos.
+## Fase 3 — Partidos
+1. Tabla `matches` (host_id, sport, court_id, datetime, max_players, skill, price, status)
+2. Tabla `match_participants` (match_id, user_id, status)
+3. `Matches.tsx`: tabs próximos/pasados/cancelados desde DB
+4. `NewMatch.tsx` crea partido real
+5. `MatchDetail.tsx` permite unirse/salir, lista participantes
+6. Notificación in-app cuando alguien se une a tu partido
 
-## 2. Tarjetas de jugador (card grid)
+## Fase 4 — Canchas
+1. Tabla `courts` (name, sport, address, lat, lng, price_per_hour, amenities, owner_id)
+2. Tabla `court_slots` o lógica de disponibilidad
+3. Tabla `bookings` (court_id, user_id, slot_datetime, status, paid)
+4. Seed inicial: las 5 canchas actuales como datos reales
+5. `Courts.tsx` y `CourtDetail.tsx` leen de DB
+6. Reservar slot → crea booking (sin pago, por ahora marcar como "Pagar en cancha")
+7. `OwnerDashboard.tsx` lista bookings de las canchas del owner
 
-Debajo de los sport chips, añadir dos líneas compactas que respeten el estilo brutalista:
+## Fase 5 — Capacitor + iOS build
+1. Generar ícono adaptive (1024×1024) + splash screen
+2. Actualizar `capacitor.config.ts` con splash y status bar
+3. Instalar `@capacitor/splash-screen`, `@capacitor/status-bar`, `@capacitor/app`
+4. Configurar `Info.plist` (permisos de cámara para foto perfil, ubicación opcional)
+5. Configurar deep link para reset password (`playon://reset-password`)
+6. Documentar pasos finales: `npx cap sync ios`, abrir Xcode, signing, archive, App Store Connect
+7. Crear assets requeridos por App Store: screenshots 6.7", privacy policy URL
 
-```text
-[NIVEL · INTERMEDIO]      ← chip mono uppercase, borde sutil, color según nivel
-SÁB · DOM                 ← texto mono muted, tracking-widest
-```
+---
 
-- Nivel: chip pequeño tipo pill, con color (principiante=azul, intermedio=verde primary, avanzado=naranja accent).
-- Disponibilidad: días abreviados (Lun, Mar, Mié, Jue, Vie, Sáb, Dom) separados por `·`, fuente mono, muted-foreground.
-- Helper `formatAvailability(days: string[])` y `skillMeta(level)` para colores/labels.
-
-## 3. Botón "Ver perfil" → Bottom Sheet
-
-Nuevo estado `profilePlayer: DemoPlayer | null` y `<Sheet>` lateral `side="bottom"` con:
-
-- **Header**: avatar 96px con anillo verde si online, nombre (Bebas Neue 3xl), municipio + distancia con `MapPin`, badge "EN LÍNEA" si aplica.
-- **Rating**: 5 estrellas (rellenas según `rating`), número grande + "rating".
-- **Deportes**: chips grandes con los colores ya definidos en `sportColors`.
-- **Stats row** (3 columnas): Nivel · Disponibilidad · Partidos jugados (mock: derivado del hash del id, p.ej. 12–80).
-- **Último partido**: tomado de `conn.last_played` si existe, si no "—".
-- **Bio**: si `p.bio` existe.
-- **CTA inferior sticky**: 
-  - Sin conexión → botón "Conectar" (verde glow) que llama `connect(p)` y cierra sheet.
-  - `pending` → "Solicitud enviada" disabled.
-  - `accepted` → "Chatear" que navega a `/chat/${conn.id}`.
-
-Estilo: fondo `bg-card`, bordes `border-border`, esquinas `rounded-t-3xl`, drag handle igual que el sheet de municipio, scroll interno, `max-h-[90vh]`.
-
-## 4. Archivos a tocar
-
-- `supabase/migrations/<timestamp>_demo_players_skill_availability.sql` — añadir columnas + UPDATEs demo.
-- `src/components/ConectaHub.tsx` — interfaz, helpers, render de card, nuevo `<Sheet>` de perfil, handler del botón.
-
-Sin cambios en otros componentes.
+## Decisiones aún por confirmar
+- **Pagos**: ¿reservar cancha sin cobrar (pago en sitio) o integrar Stripe en V1?
+- **Notificaciones in-app**: ¿toast + badge en bottom nav, o sin nada por ahora?
+- **Eliminar cuenta**: requerido por App Store si hay auth — confirmamos que sí
+- **Privacy Policy + Terms**: necesitas URLs públicas, ¿genero páginas estáticas?
