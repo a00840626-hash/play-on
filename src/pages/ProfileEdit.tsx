@@ -33,6 +33,8 @@ const ProfileEdit = () => {
   const [skill, setSkill] = useState("intermedio");
   const [sports, setSports] = useState<string[]>([]);
   const [availability, setAvailability] = useState<string[]>([]);
+  const [avatarPath, setAvatarPath] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -44,6 +46,7 @@ const ProfileEdit = () => {
         setSkill(data.skill_level ?? "intermedio");
         setSports(data.sports ?? []);
         setAvailability(data.availability ?? []);
+        setAvatarPath(data.avatar_url ?? null);
       }
       setLoading(false);
     });
@@ -66,6 +69,7 @@ const ProfileEdit = () => {
       skill_level: skill,
       sports,
       availability,
+      avatar_url: avatarPath,
     }).eq("id", user.id);
     setSaving(false);
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
