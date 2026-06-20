@@ -91,11 +91,39 @@ const ProfileEdit = () => {
       </div>
 
       <div className="flex justify-center mt-6">
-        <InitialsAvatar name={displayName || user?.email} size={96} />
+        <InitialsAvatar name={displayName || user?.email} avatarPath={avatarPath} size={96} />
       </div>
-      <p className="text-center text-[11px] font-mono text-muted-foreground mt-2 px-6">
-        Tu avatar son las iniciales de tu nombre
-      </p>
+      <div className="flex justify-center mt-2">
+        <label className="cursor-pointer">
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file || !user) return;
+              if (file.size > 2 * 1024 * 1024) {
+                toast({ title: "Imagen muy grande", description: "Máximo 2 MB", variant: "destructive" });
+                return;
+              }
+              setUploading(true);
+              const path = `${user.id}/avatar.jpg`;
+              const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
+              setUploading(false);
+              if (error) {
+                toast({ title: "Error al subir foto", description: error.message, variant: "destructive" });
+                return;
+              }
+              setAvatarPath(path);
+              toast({ title: "Foto actualizada" });
+            }}
+            disabled={uploading}
+          />
+          <span className="text-[11px] font-mono text-primary underline underline-offset-2">
+            {uploading ? "Subiendo..." : avatarPath ? "Cambiar foto" : "Subir foto de perfil"}
+          </span>
+        </label>
+      </div>
 
       <form onSubmit={save} className="px-4 mt-6 space-y-5 pb-8">
         <Field label="Nombre">

@@ -29,6 +29,7 @@ interface ProfileData {
   skill_level: string | null;
   sports: string[] | null;
   bio: string | null;
+  avatar_url: string | null;
 }
 
 const Profile = () => {
@@ -44,7 +45,7 @@ const Profile = () => {
     if (!user) return;
     (async () => {
       const [{ data: prof }, { count: mc }, { count: cc }] = await Promise.all([
-        supabase.from("profiles").select("display_name, municipio, skill_level, sports, bio").eq("id", user.id).maybeSingle(),
+        supabase.from("profiles").select("display_name, municipio, skill_level, sports, bio, avatar_url").eq("id", user.id).maybeSingle(),
         supabase.from("match_participants").select("id", { count: "exact", head: true }).eq("user_id", user.id),
         supabase.from("connections").select("id", { count: "exact", head: true }).or(`user_a.eq.${user.id},user_b.eq.${user.id}`).eq("status", "accepted"),
       ]);
@@ -89,7 +90,7 @@ const Profile = () => {
         style={{ background: "linear-gradient(180deg, hsl(150 60% 6%) 0%, hsl(var(--background)) 100%)" }}>
         <div className="absolute inset-0 field-grid opacity-60 pointer-events-none" />
         <div className="relative flex flex-col items-center">
-          <InitialsAvatar name={name} size={120} />
+          <InitialsAvatar name={name} avatarPath={profile?.avatar_url} size={120} />
           <h1 className="font-display text-foreground text-center mt-4" style={{ fontSize: 30, letterSpacing: "0.04em", lineHeight: 1 }}>
             {name.toUpperCase()}
           </h1>
