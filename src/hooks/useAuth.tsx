@@ -40,7 +40,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         user: session?.user ?? null,
         loading,
         signOut: async () => {
-          await supabase.auth.signOut();
+          try {
+            const { error } = await supabase.auth.signOut();
+            if (error) throw error;
+          } catch {
+            // Si la revocación remota falla (p. ej. sin red), limpia la sesión
+            // local para que el usuario no quede con una sesión fantasma.
+            await supabase.auth.signOut({ scope: "local" }).catch(() => {});
+          }
         },
       }}
     >

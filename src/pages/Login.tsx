@@ -5,6 +5,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { toast } from "@/hooks/use-toast";
+import { authErrorMessage, isEmailNotConfirmed } from "@/lib/auth-errors";
 
 const schema = z.object({
   email: z.string().trim().email("Email inválido").max(255),
@@ -17,6 +18,8 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [needsConfirmation, setNeedsConfirmation] = useState(false);
+  const [resending, setResending] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,6 +29,7 @@ const Login = () => {
       return;
     }
     setLoading(true);
+    setNeedsConfirmation(false);
     try {
       if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
@@ -44,14 +48,30 @@ const Login = () => {
         navigate("/");
       }
     } catch (err: any) {
+      if (isEmailNotConfirmed(err)) setNeedsConfirmation(true);
       toast({
-        title: "Error",
-        description: err?.message ?? "Algo salió mal",
+        title: mode === "signup" ? "No se pudo crear la cuenta" : "No se pudo iniciar sesión",
+        description: authErrorMessage(err),
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
+  };
+
+  const resendConfirmation = async () => {
+    setResending(true);
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email,
+      options: { emailRedirectTo: `${window.location.origin}/onboarding` },
+    });
+    setResending(false);
+    if (error) {
+      toast({ title: "No se pudo reenviar", description: authErrorMessage(error), variant: "destructive" });
+      return;
+    }
+    toast({ title: "Correo reenviado", description: `Revisa la bandeja de ${email}.` });
   };
 
   const googleSignIn = async () => {
@@ -60,7 +80,7 @@ const Login = () => {
       redirect_uri: window.location.origin,
     });
     if (res.error) {
-      toast({ title: "Error con Google", description: String((res.error as any)?.message ?? res.error), variant: "destructive" });
+      toast({ title: "No se pudo entrar con Google", description: authErrorMessage(res.error), variant: "destructive" });
       setLoading(false);
     }
   };
@@ -146,6 +166,17 @@ const Login = () => {
             <>{mode === "signup" ? "Crear cuenta" : "Entrar"} <ArrowRight size={16} /></>
           )}
         </button>
+
+        {needsConfirmation && (
+          <button
+            type="button"
+            onClick={resendConfirmation}
+            disabled={resending}
+            className="w-full h-10 rounded border border-primary/50 bg-primary/10 text-primary text-[11px] font-mono uppercase tracking-widest hover:bg-primary/20 transition disabled:opacity-50"
+          >
+            {resending ? "Reenviando..." : "Reenviar correo de confirmación"}
+          </button>
+        )}
 
         {mode === "signin" && (
           <div className="text-right">

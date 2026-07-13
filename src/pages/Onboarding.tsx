@@ -5,37 +5,9 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
-
-const MUNICIPIOS = [
-  "Monterrey", "Guadalupe", "Apodaca", "Escobedo", "San Nicolás",
-  "Santa Catarina", "García", "Juárez", "San Pedro", "Cadereyta",
-  "Salinas Victoria", "Santiago",
-];
-
-const SPORTS: { id: string; label: string }[] = [
-  { id: "futbol", label: "Fútbol" },
-  { id: "padel", label: "Pádel" },
-  { id: "tenis", label: "Tenis" },
-  { id: "basket", label: "Basket" },
-  { id: "volley", label: "Volley" },
-  { id: "running", label: "Running" },
-];
-
-const LEVELS = [
-  { id: "principiante", label: "Principiante" },
-  { id: "intermedio", label: "Intermedio" },
-  { id: "avanzado", label: "Avanzado" },
-] as const;
-
-const DAYS = [
-  { id: "lun", label: "Lun" },
-  { id: "mar", label: "Mar" },
-  { id: "mie", label: "Mié" },
-  { id: "jue", label: "Jue" },
-  { id: "vie", label: "Vie" },
-  { id: "sab", label: "Sáb" },
-  { id: "dom", label: "Dom" },
-];
+import { MUNICIPIOS, SPORTS, LEVELS, DAYS } from "@/lib/catalogs";
+import { uploadAvatar, MAX_AVATAR_BYTES } from "@/lib/avatar";
+import { markOnboarded } from "@/hooks/useOnboarded";
 
 const schema = z.object({
   display_name: z.string().trim().min(2, "Mínimo 2 caracteres").max(50),
@@ -43,7 +15,6 @@ const schema = z.object({
   sports: z.array(z.string()).min(1, "Elige al menos un deporte"),
   skill_level: z.enum(["principiante", "intermedio", "avanzado"]),
   availability: z.array(z.string()).min(1, "Elige al menos un día"),
-  avatar_url: z.string().optional().or(z.literal("")),
 });
 
 const Onboarding = () => {
@@ -51,13 +22,14 @@ const Onboarding = () => {
   const { user, loading: authLoading } = useAuth();
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string>("");
   const [form, setForm] = useState({
     display_name: "",
     municipio: "",
     sports: [] as string[],
     skill_level: "" as "" | "principiante" | "intermedio" | "avanzado",
     availability: [] as string[],
-    avatar_url: "",
   });
 
   // Redirect to login if not authed; load existing profile
@@ -84,7 +56,6 @@ const Onboarding = () => {
             sports: data.sports ?? [],
             skill_level: (data.skill_level as any) ?? "",
             availability: data.availability ?? [],
-            avatar_url: data.avatar_url ?? "",
           });
         }
       });
@@ -97,16 +68,18 @@ const Onboarding = () => {
     }));
   };
 
-  const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 2_000_000) {
+    if (file.size > MAX_AVATAR_BYTES) {
       toast({ title: "Imagen muy grande", description: "Máx 2 MB", variant: "destructive" });
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => setForm((f) => ({ ...f, avatar_url: reader.result as string }));
-    reader.readAsDataURL(file);
+    setAvatarFile(file);
+    setAvatarPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return URL.createObjectURL(file);
+    });
   };
 
   const save = async () => {
@@ -117,6 +90,20 @@ const Onboarding = () => {
       return;
     }
     setSaving(true);
+
+    let avatarPath: string | null = null;
+    if (avatarFile) {
+      try {
+        avatarPath = await uploadAvatar(user.id, avatarFile);
+      } catch {
+        toast({
+          title: "No se pudo subir la foto",
+          description: "Tu perfil se guardará sin foto; puedes subirla después en Editar perfil.",
+          variant: "destructive",
+        });
+      }
+    }
+
     const { error } = await supabase.from("profiles").upsert({
       id: user.id,
       display_name: form.display_name.trim(),
@@ -124,15 +111,16 @@ const Onboarding = () => {
       sports: form.sports,
       skill_level: form.skill_level || null,
       availability: form.availability,
-      avatar_url: form.avatar_url || null,
+      ...(avatarPath ? { avatar_url: avatarPath } : {}),
       onboarded: true,
       online: true,
     });
     setSaving(false);
     if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: "No se pudo guardar tu perfil", description: error.message, variant: "destructive" });
       return;
     }
+    markOnboarded(user.id);
     toast({ title: "¡Perfil listo!", description: "Bienvenido a PlayOn." });
     navigate("/", { replace: true });
   };
@@ -188,8 +176,8 @@ const Onboarding = () => {
             <span className="text-[11px] uppercase tracking-widest font-mono text-muted-foreground">Foto (opcional)</span>
             <div className="mt-1.5 flex items-center gap-3">
               <div className="h-16 w-16 rounded-full bg-card border border-border overflow-hidden flex items-center justify-center">
-                {form.avatar_url ? (
-                  <img src={form.avatar_url} alt="" className="h-full w-full object-cover" />
+                {avatarPreview ? (
+                  <img src={avatarPreview} alt="" className="h-full w-full object-cover" />
                 ) : (
                   <span className="font-display text-2xl text-muted-foreground">
                     {form.display_name.charAt(0).toUpperCase() || "?"}

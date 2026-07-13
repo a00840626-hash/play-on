@@ -4,6 +4,7 @@ import { ArrowLeft, Mail, Loader2, Send } from "lucide-react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { authErrorMessage } from "@/lib/auth-errors";
 
 const schema = z.object({ email: z.string().trim().email("Email inválido").max(255) });
 
@@ -28,7 +29,7 @@ const ForgotPassword = () => {
       setSent(true);
       toast({ title: "Revisa tu correo", description: "Te enviamos un link para reestablecer tu contraseña." });
     } catch (err: any) {
-      toast({ title: "Error", description: err?.message ?? "No se pudo enviar", variant: "destructive" });
+      toast({ title: "No se pudo enviar", description: authErrorMessage(err), variant: "destructive" });
     } finally {
       setLoading(false);
     }

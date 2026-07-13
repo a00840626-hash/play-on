@@ -26,6 +26,7 @@ import Terms from "./pages/Terms";
 import { DeviceFrame } from "./components/playon/DeviceFrame";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { isOnboardedCached, markOnboarded } from "@/hooks/useOnboarded";
 
 const queryClient = new QueryClient();
 
@@ -38,13 +39,23 @@ const RequireAuth = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (!user) { setOnboarded(null); return; }
+    if (isOnboardedCached(user.id)) { setOnboarded(true); return; }
     let cancelled = false;
     supabase.from("profiles").select("onboarded").eq("id", user.id).maybeSingle()
-      .then(({ data }) => { if (!cancelled) setOnboarded(!!data?.onboarded); });
+      .then(({ data }) => {
+        if (cancelled) return;
+        if (data?.onboarded) markOnboarded(user.id);
+        setOnboarded(!!data?.onboarded);
+      });
     return () => { cancelled = true; };
   }, [user]);
 
-  if (loading || (user && onboarded === null)) {
+  // La caché se consulta también en render: React reutiliza esta instancia entre
+  // rutas, así que el estado del efecto puede quedar desactualizado justo después
+  // de terminar el onboarding.
+  const isOnboarded = onboarded || (user ? isOnboardedCached(user.id) : false);
+
+  if (loading || (user && onboarded === null && !isOnboarded)) {
     return (
       <div className="min-h-full flex items-center justify-center">
         <Loader2 className="animate-spin text-primary" />
@@ -52,7 +63,7 @@ const RequireAuth = ({ children }: { children: ReactNode }) => {
     );
   }
   if (!user) return <Navigate to="/login" replace state={{ from: location.pathname }} />;
-  if (!onboarded && location.pathname !== "/onboarding") return <Navigate to="/onboarding" replace />;
+  if (!isOnboarded && location.pathname !== "/onboarding") return <Navigate to="/onboarding" replace />;
   return <>{children}</>;
 };
 

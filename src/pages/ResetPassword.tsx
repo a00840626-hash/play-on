@@ -1,24 +1,33 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Lock, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { authErrorMessage } from "@/lib/auth-errors";
 
 const ResetPassword = () => {
   const navigate = useNavigate();
   const [pwd, setPwd] = useState("");
   const [pwd2, setPwd2] = useState("");
   const [loading, setLoading] = useState(false);
-  const [ready, setReady] = useState(false);
+  const [status, setStatus] = useState<"checking" | "ready" | "invalid">("checking");
 
   useEffect(() => {
-    // When user arrives via recovery link, Supabase fires PASSWORD_RECOVERY
+    const cameFromRecoveryLink = /type=recovery/.test(window.location.hash);
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") setReady(true);
+      if (event === "PASSWORD_RECOVERY") setStatus("ready");
     });
-    // Also allow if user already has a session (link processed)
-    supabase.auth.getSession().then(({ data }) => { if (data.session) setReady(true); });
-    return () => sub.subscription.unsubscribe();
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session && cameFromRecoveryLink) setStatus("ready");
+    });
+    // Si en unos segundos no hubo evento de recovery ni sesión válida, el link no sirve
+    const timer = setTimeout(() => {
+      setStatus((s) => (s === "checking" ? "invalid" : s));
+    }, 4000);
+    return () => {
+      sub.subscription.unsubscribe();
+      clearTimeout(timer);
+    };
   }, []);
 
   const submit = async (e: React.FormEvent) => {
@@ -28,7 +37,7 @@ const ResetPassword = () => {
     setLoading(true);
     const { error } = await supabase.auth.updateUser({ password: pwd });
     setLoading(false);
-    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+    if (error) { toast({ title: "No se pudo actualizar", description: authErrorMessage(error), variant: "destructive" }); return; }
     toast({ title: "Contraseña actualizada", description: "Ya puedes entrar con tu nueva contraseña" });
     navigate("/");
   };
@@ -40,9 +49,16 @@ const ResetPassword = () => {
       </h1>
       <p className="mt-3 text-sm text-muted-foreground">Crea una nueva contraseña para tu cuenta.</p>
 
-      {!ready ? (
+      {status === "checking" ? (
         <div className="mt-10 text-center text-sm text-muted-foreground">
           <Loader2 className="animate-spin text-primary mx-auto" /> Validando link...
+        </div>
+      ) : status === "invalid" ? (
+        <div className="mt-8 p-5 rounded border border-destructive/40 bg-card text-center">
+          <p className="text-sm">Este link ya no es válido o expiró.</p>
+          <Link to="/forgot-password" className="mt-3 inline-block text-xs uppercase tracking-widest font-mono text-primary">
+            Solicitar uno nuevo →
+          </Link>
         </div>
       ) : (
         <form onSubmit={submit} className="mt-6 space-y-3">

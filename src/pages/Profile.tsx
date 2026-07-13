@@ -11,17 +11,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-const SPORT_LABEL: Record<string, string> = {
-  futbol: "Fútbol", tenis: "Tenis", padel: "Pádel", basquetbol: "Básquet",
-  pickleball: "Pickleball", voleibol: "Voleibol", running: "Running",
-};
-const SPORT_ICON: Record<string, string> = {
-  futbol: "⚽", tenis: "🎾", padel: "🎾", basquetbol: "🏀",
-  pickleball: "🥒", voleibol: "🏐", running: "🏃",
-};
-const LEVEL_LABEL: Record<string, string> = {
-  principiante: "Principiante", intermedio: "Intermedio", avanzado: "Avanzado",
-};
+import { sportLabel, sportIcon, LEVEL_LABEL } from "@/lib/catalogs";
 
 interface ProfileData {
   display_name: string | null;
@@ -65,13 +55,17 @@ const Profile = () => {
     if (!user) return;
     setDeleting(true);
     try {
-      // Delete profile row first (cascades wipe most user data via FK constraints)
-      await supabase.from("profiles").delete().eq("id", user.id);
-      await supabase.auth.signOut();
+      // La eliminación real (auth.users + cascada) requiere service role,
+      // por eso vive en la Edge Function delete-account.
+      const { data, error } = await supabase.functions.invoke("delete-account");
+      if (error || data?.error) {
+        throw new Error(data?.error ?? "El servicio de eliminación no está disponible. Intenta más tarde o contáctanos.");
+      }
+      await signOut();
       toast({ title: "Cuenta eliminada", description: "Lamentamos verte ir." });
       navigate("/login");
     } catch (e: any) {
-      toast({ title: "Error", description: e?.message ?? "No se pudo eliminar", variant: "destructive" });
+      toast({ title: "No se pudo eliminar la cuenta", description: e?.message ?? "Intenta de nuevo", variant: "destructive" });
     } finally {
       setDeleting(false);
     }
@@ -128,8 +122,8 @@ const Profile = () => {
           <div className="flex flex-wrap gap-2 mt-3">
             {sports.map((s) => (
               <span key={s} className="inline-flex items-center gap-2 h-10 px-3 rounded-sm bg-card border border-border text-sm">
-                <span>{SPORT_ICON[s] ?? "•"}</span>
-                <span className="font-bold uppercase tracking-wider text-xs">{SPORT_LABEL[s] ?? s}</span>
+                <span>{sportIcon(s)}</span>
+                <span className="font-bold uppercase tracking-wider text-xs">{sportLabel(s)}</span>
               </span>
             ))}
           </div>

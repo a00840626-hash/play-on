@@ -6,21 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 import { InitialsAvatar } from "@/components/InitialsAvatar";
-
-const SPORTS = ["futbol", "tenis", "padel", "basquetbol", "pickleball", "voleibol"] as const;
-const SPORT_LABELS: Record<string, string> = {
-  futbol: "Fútbol", tenis: "Tenis", padel: "Pádel", basquetbol: "Básquet", pickleball: "Pickleball", voleibol: "Voleibol",
-};
-const LEVELS = [
-  { id: "principiante", label: "Principiante" },
-  { id: "intermedio", label: "Intermedio" },
-  { id: "avanzado", label: "Avanzado" },
-];
-const MUNICIPIOS = ["Monterrey", "San Pedro", "San Nicolás", "Guadalupe", "Apodaca", "Santa Catarina"];
-const DAYS = [
-  { id: "lun", label: "Lun" }, { id: "mar", label: "Mar" }, { id: "mie", label: "Mié" },
-  { id: "jue", label: "Jue" }, { id: "vie", label: "Vie" }, { id: "sab", label: "Sáb" }, { id: "dom", label: "Dom" },
-];
+import { MUNICIPIOS, SPORTS, LEVELS, DAYS, canonicalSportId } from "@/lib/catalogs";
+import { uploadAvatar, MAX_AVATAR_BYTES } from "@/lib/avatar";
 
 const ProfileEdit = () => {
   const { user } = useAuth();
@@ -29,7 +16,7 @@ const ProfileEdit = () => {
   const [saving, setSaving] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
-  const [municipio, setMunicipio] = useState(MUNICIPIOS[0]);
+  const [municipio, setMunicipio] = useState<string>(MUNICIPIOS[0]);
   const [skill, setSkill] = useState("intermedio");
   const [sports, setSports] = useState<string[]>([]);
   const [availability, setAvailability] = useState<string[]>([]);
@@ -44,7 +31,8 @@ const ProfileEdit = () => {
         setBio(data.bio ?? "");
         setMunicipio(data.municipio ?? MUNICIPIOS[0]);
         setSkill(data.skill_level ?? "intermedio");
-        setSports(data.sports ?? []);
+        // Normaliza ids guardados por versiones anteriores (basket → basquetbol, etc.)
+        setSports((data.sports ?? []).map(canonicalSportId));
         setAvailability(data.availability ?? []);
         setAvatarPath(data.avatar_url ?? null);
       }
@@ -102,20 +90,20 @@ const ProfileEdit = () => {
             onChange={async (e) => {
               const file = e.target.files?.[0];
               if (!file || !user) return;
-              if (file.size > 2 * 1024 * 1024) {
+              if (file.size > MAX_AVATAR_BYTES) {
                 toast({ title: "Imagen muy grande", description: "Máximo 2 MB", variant: "destructive" });
                 return;
               }
               setUploading(true);
-              const path = `${user.id}/avatar.jpg`;
-              const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
-              setUploading(false);
-              if (error) {
-                toast({ title: "Error al subir foto", description: error.message, variant: "destructive" });
-                return;
+              try {
+                const path = await uploadAvatar(user.id, file);
+                setAvatarPath(path);
+                toast({ title: "Foto actualizada" });
+              } catch (err: any) {
+                toast({ title: "Error al subir foto", description: err?.message ?? "Intenta de nuevo", variant: "destructive" });
+              } finally {
+                setUploading(false);
               }
-              setAvatarPath(path);
-              toast({ title: "Foto actualizada" });
             }}
             disabled={uploading}
           />
@@ -168,9 +156,9 @@ const ProfileEdit = () => {
         <Field label="Deportes">
           <div className="grid grid-cols-3 gap-2">
             {SPORTS.map((s) => (
-              <button key={s} type="button" onClick={() => toggle(sports, setSports, s)}
-                className={`h-11 rounded-sm border text-xs font-bold uppercase tracking-widest font-mono ${sports.includes(s) ? "bg-primary text-primary-foreground border-primary glow-green" : "bg-card border-border text-muted-foreground"}`}>
-                {SPORT_LABELS[s]}
+              <button key={s.id} type="button" onClick={() => toggle(sports, setSports, s.id)}
+                className={`h-11 rounded-sm border text-xs font-bold uppercase tracking-widest font-mono ${sports.includes(s.id) ? "bg-primary text-primary-foreground border-primary glow-green" : "bg-card border-border text-muted-foreground"}`}>
+                {s.label}
               </button>
             ))}
           </div>
