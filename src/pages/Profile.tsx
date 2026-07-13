@@ -1,26 +1,79 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Settings, LogOut, ChevronRight, BarChart3, Edit2, Trash2, Loader2, type LucideIcon } from "lucide-react";
+import {
+  Settings,
+  LogOut,
+  ChevronRight,
+  BarChart3,
+  Edit2,
+  Trash2,
+  Loader2,
+  Flame,
+  Medal,
+  Trophy,
+  Users,
+  Award,
+  type LucideIcon,
+} from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { InitialsAvatar } from "@/components/InitialsAvatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
+import { badgeCatalog, fmtBadgeDate } from "@/data/badges";
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+  getLevelFromXp,
+  getLevelProgressPercentage,
+  getXpForCurrentLevel,
+  getXpForNextLevel,
+  getXpNeededForNextLevel,
+} from "@/lib/progression";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
 const SPORT_LABEL: Record<string, string> = {
-  futbol: "Fútbol", tenis: "Tenis", padel: "Pádel", basquetbol: "Básquet",
-  pickleball: "Pickleball", voleibol: "Voleibol", running: "Running",
+  futbol: "Fútbol",
+  tenis: "Tenis",
+  padel: "Pádel",
+  basquetbol: "Básquet",
+  basketball: "Básquet",
+  basket: "Básquet",
+  pickleball: "Pickleball",
+  voleibol: "Voleibol",
+  volley: "Voleibol",
+  running: "Running",
+  tocho: "Tocho",
+  americano: "F. Americano",
 };
+
 const SPORT_ICON: Record<string, string> = {
-  futbol: "⚽", tenis: "🎾", padel: "🎾", basquetbol: "🏀",
-  pickleball: "🥒", voleibol: "🏐", running: "🏃",
+  futbol: "⚽",
+  tenis: "🎾",
+  padel: "🎾",
+  basquetbol: "🏀",
+  basketball: "🏀",
+  basket: "🏀",
+  pickleball: "•",
+  voleibol: "🏐",
+  volley: "🏐",
+  running: "•",
+  tocho: "•",
+  americano: "•",
 };
+
 const LEVEL_LABEL: Record<string, string> = {
-  principiante: "Principiante", intermedio: "Intermedio", avanzado: "Avanzado",
+  principiante: "Principiante",
+  intermedio: "Intermedio",
+  avanzado: "Avanzado",
 };
 
 interface ProfileData {
@@ -32,10 +85,36 @@ interface ProfileData {
   avatar_url: string | null;
 }
 
+interface ProgressData {
+  overall_xp: number;
+  overall_level: number;
+  current_streak: number;
+  longest_streak: number;
+  games_played: number;
+  sports_friends_made: number;
+  badges_earned: number;
+}
+
+interface SportProgress {
+  sport: string;
+  skill_level: string | null;
+  xp: number;
+  level: number;
+  games_played: number;
+}
+
+interface EarnedBadge {
+  badge_key: string;
+  earned_at: string | null;
+}
+
 const Profile = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [progress, setProgress] = useState<ProgressData | null>(null);
+  const [sportProgress, setSportProgress] = useState<SportProgress[]>([]);
+  const [earnedBadges, setEarnedBadges] = useState<EarnedBadge[]>([]);
   const [matchesCount, setMatchesCount] = useState(0);
   const [connectionsCount, setConnectionsCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -44,12 +123,36 @@ const Profile = () => {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const [{ data: prof }, { count: mc }, { count: cc }] = await Promise.all([
-        supabase.from("profiles").select("display_name, municipio, skill_level, sports, bio, avatar_url").eq("id", user.id).maybeSingle(),
-        supabase.from("match_participants").select("id", { count: "exact", head: true }).eq("user_id", user.id),
-        supabase.from("connections").select("id", { count: "exact", head: true }).or(`user_a.eq.${user.id},user_b.eq.${user.id}`).eq("status", "accepted"),
-      ]);
+      const [{ data: prof }, { data: prog }, { data: sports }, { data: badges }, { count: mc }, { count: cc }] =
+        await Promise.all([
+          supabase
+            .from("profiles")
+            .select("display_name, municipio, skill_level, sports, bio, avatar_url")
+            .eq("id", user.id)
+            .maybeSingle(),
+          supabase.from("user_progress").select("*").eq("user_id", user.id).maybeSingle(),
+          supabase
+            .from("user_sport_profiles")
+            .select("sport, skill_level, xp, level, games_played")
+            .eq("user_id", user.id)
+            .order("xp", { ascending: false }),
+          supabase.from("badges").select("badge_key, earned_at").eq("user_id", user.id).order("earned_at", { ascending: false }),
+          supabase
+            .from("match_participants")
+            .select("id, matches!inner(status)", { count: "exact", head: true })
+            .eq("user_id", user.id)
+            .eq("matches.status", "completed"),
+          supabase
+            .from("connections")
+            .select("id", { count: "exact", head: true })
+            .or(`user_a.eq.${user.id},user_b.eq.${user.id}`)
+            .eq("status", "accepted"),
+        ]);
+
       setProfile(prof);
+      setProgress((prog as ProgressData | null) ?? null);
+      setSportProgress((sports as SportProgress[]) ?? []);
+      setEarnedBadges((badges as EarnedBadge[]) ?? []);
       setMatchesCount(mc ?? 0);
       setConnectionsCount(cc ?? 0);
       setLoading(false);
@@ -65,7 +168,6 @@ const Profile = () => {
     if (!user) return;
     setDeleting(true);
     try {
-      // Delete profile row first (cascades wipe most user data via FK constraints)
       await supabase.from("profiles").delete().eq("id", user.id);
       await supabase.auth.signOut();
       toast({ title: "Cuenta eliminada", description: "Lamentamos verte ir." });
@@ -77,64 +179,136 @@ const Profile = () => {
     }
   };
 
+  const passportSports = useMemo(() => {
+    const bySport = new Map(sportProgress.map((s) => [s.sport, s]));
+    for (const sport of profile?.sports ?? []) {
+      if (!bySport.has(sport)) {
+        bySport.set(sport, {
+          sport,
+          skill_level: profile?.skill_level ?? null,
+          xp: 0,
+          level: 1,
+          games_played: 0,
+        });
+      }
+    }
+    return Array.from(bySport.values());
+  }, [profile, sportProgress]);
+
   if (loading) {
-    return <AppShell><div className="p-10 text-center"><Loader2 className="animate-spin text-primary mx-auto" /></div></AppShell>;
+    return (
+      <AppShell>
+        <div className="p-10 text-center">
+          <Loader2 className="animate-spin text-primary mx-auto" />
+        </div>
+      </AppShell>
+    );
   }
 
   const name = profile?.display_name || user?.email?.split("@")[0] || "Jugador";
-  const sports = profile?.sports ?? [];
+  const overallXp = progress?.overall_xp ?? 0;
+  const overallLevel = getLevelFromXp(overallXp);
+  const currentStreak = progress?.current_streak ?? 0;
+  const longestStreak = progress?.longest_streak ?? 0;
+  const gamesPlayed = progress?.games_played ?? matchesCount;
+  const friendsMade = progress?.sports_friends_made ?? connectionsCount;
+  const badgesEarned = progress?.badges_earned ?? earnedBadges.length;
+  const currentLevelXp = getXpForCurrentLevel(overallLevel);
+  const nextLevelXp = getXpForNextLevel(overallLevel);
+  const xpNeeded = getXpNeededForNextLevel(overallXp);
+  const levelProgress = getLevelProgressPercentage(overallXp);
 
   return (
-    <AppShell subtitle="PERFIL">
-      <section className="relative px-5 pt-6 pb-7 overflow-hidden"
-        style={{ background: "linear-gradient(180deg, hsl(150 60% 6%) 0%, hsl(var(--background)) 100%)" }}>
+    <AppShell subtitle="Sports Passport">
+      <section
+        className="relative px-5 pt-6 pb-7 overflow-hidden"
+        style={{ background: "linear-gradient(180deg, hsl(150 60% 6%) 0%, hsl(var(--background)) 100%)" }}
+      >
         <div className="absolute inset-0 field-grid opacity-60 pointer-events-none" />
         <div className="relative flex flex-col items-center">
-          <InitialsAvatar name={name} avatarPath={profile?.avatar_url} size={120} />
-          <h1 className="font-display text-foreground text-center mt-4" style={{ fontSize: 30, letterSpacing: "0.04em", lineHeight: 1 }}>
+          <p className="text-[10px] uppercase tracking-[0.24em] font-mono text-primary mb-4">Sports Passport</p>
+          <InitialsAvatar name={name} avatarPath={profile?.avatar_url} size={116} />
+          <h1 className="font-display text-foreground text-center mt-4 leading-none" style={{ fontSize: 32, letterSpacing: "0.04em" }}>
             {name.toUpperCase()}
           </h1>
           <p className="font-body text-muted-foreground text-[13px] mt-2">
-            {profile?.municipio ? `${profile.municipio}, NL` : "Monterrey"}
+            {profile?.municipio ? `${profile.municipio}, NL` : "Monterrey, NL"}
           </p>
-          {profile?.skill_level && (
-            <div className="mt-3 inline-flex items-center rounded-full px-3 py-1.5"
-              style={{ backgroundColor: "hsl(var(--primary) / 0.1)", border: "1px solid hsl(var(--primary))" }}>
-              <span className="font-condensed font-bold text-[11px] uppercase text-primary" style={{ letterSpacing: "0.2em" }}>
-                ◉ {LEVEL_LABEL[profile.skill_level]}
-              </span>
-            </div>
-          )}
           {profile?.bio && <p className="text-sm text-muted-foreground text-center mt-4 max-w-xs">{profile.bio}</p>}
 
-          <div className="flex items-stretch w-full mt-6">
-            {[
-              { v: String(matchesCount), l: "Partidos" },
-              { v: String(sports.length), l: "Deportes" },
-              { v: String(connectionsCount), l: "Amigos" },
-            ].map((s, i, arr) => (
-              <div key={s.l} className={`flex-1 flex flex-col items-center text-center ${i < arr.length - 1 ? "border-r border-border" : ""}`}>
-                <div className="font-display text-primary leading-none" style={{ fontSize: 36 }}>{s.v}</div>
-                <div className="font-condensed text-[10px] uppercase text-muted-foreground mt-1.5" style={{ letterSpacing: "0.15em" }}>{s.l}</div>
+          <div className="w-full mt-6 rounded border border-primary/40 bg-card/70 p-4">
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="text-[10px] uppercase tracking-widest font-mono text-muted-foreground">Nivel general</p>
+                <p className="font-display text-5xl text-primary leading-none mt-1">{overallLevel}</p>
               </div>
-            ))}
+              <div className="text-right">
+                <p className="font-display text-3xl leading-none">{overallXp}</p>
+                <p className="text-[10px] uppercase tracking-widest font-mono text-muted-foreground">XP total</p>
+              </div>
+            </div>
+            <div className="mt-3 h-2 rounded-full bg-secondary overflow-hidden">
+              <div className="h-full rounded-full bg-primary glow-green" style={{ width: `${levelProgress}%` }} />
+            </div>
+            <div className="mt-2 flex items-center justify-between gap-3 text-[10px] uppercase tracking-widest font-mono text-muted-foreground">
+              <span>{overallXp - currentLevelXp} / {nextLevelXp - currentLevelXp} XP</span>
+              <span>{xpNeeded} XP para nivel {overallLevel + 1}</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 w-full mt-4">
+            <PassportStat label="Partidos" value={gamesPlayed} icon={Trophy} />
+            <PassportStat label="Amigos" value={friendsMade} icon={Users} />
+            <PassportStat label="Badges" value={badgesEarned} icon={Medal} />
+            <PassportStat label="Racha" value={currentStreak} icon={Flame} suffix="d" />
+            <PassportStat label="Mejor racha" value={longestStreak} icon={Award} suffix="d" />
+            <PassportStat label="Deportes" value={passportSports.length} icon={BarChart3} />
           </div>
         </div>
       </section>
 
-      {sports.length > 0 && (
-        <section className="px-4 mt-6">
-          <h2 className="font-display text-2xl leading-none">MIS DEPORTES</h2>
-          <div className="flex flex-wrap gap-2 mt-3">
-            {sports.map((s) => (
-              <span key={s} className="inline-flex items-center gap-2 h-10 px-3 rounded-sm bg-card border border-border text-sm">
-                <span>{SPORT_ICON[s] ?? "•"}</span>
-                <span className="font-bold uppercase tracking-wider text-xs">{SPORT_LABEL[s] ?? s}</span>
-              </span>
-            ))}
-          </div>
-        </section>
-      )}
+      <section className="px-4 mt-6">
+        <h2 className="font-display text-2xl leading-none">DEPORTES</h2>
+        <div className="mt-3 space-y-3">
+          {passportSports.length === 0 ? (
+            <div className="rounded border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+              Agrega tus deportes para empezar tu pasaporte.
+            </div>
+          ) : (
+            passportSports.map((sport) => <SportPassportRow key={sport.sport} sport={sport} />)
+          )}
+        </div>
+      </section>
+
+      <section className="px-4 mt-6">
+        <h2 className="font-display text-2xl leading-none">BADGES GANADOS</h2>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          {earnedBadges.length === 0 ? (
+            <div className="col-span-2 rounded border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+              Tus logros aparecerán aquí cuando empieces a jugar.
+            </div>
+          ) : (
+            earnedBadges.map((badge) => {
+              const def = badgeCatalog.find((b) => b.key === badge.badge_key);
+              const Icon = def?.icon ?? Medal;
+              return (
+                <div key={badge.badge_key} className="rounded border border-border bg-card p-3">
+                  <Icon size={18} className="text-primary" />
+                  <p className="mt-2 font-display text-lg leading-none">{def?.title ?? badge.badge_key.toUpperCase()}</p>
+                  <p className="mt-1 text-xs text-muted-foreground leading-snug">
+                    {def?.description ?? "Logro ganado en PlayOn."}
+                  </p>
+                  {badge.earned_at && (
+                    <p className="mt-1 text-[10px] uppercase tracking-widest font-mono text-muted-foreground">
+                      {fmtBadgeDate(badge.earned_at)}
+                    </p>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+      </section>
 
       <section className="px-4 mt-6">
         <Link to="/profile/edit" className="flex items-center justify-between rounded border border-primary/40 bg-card p-4 hover:bg-primary/5 transition-colors">
@@ -193,6 +367,51 @@ const Profile = () => {
         </AlertDialog>
       </section>
     </AppShell>
+  );
+};
+
+const PassportStat = ({ label, value, icon: Icon, suffix = "" }: { label: string; value: number; icon: LucideIcon; suffix?: string }) => (
+  <div className="rounded border border-border bg-card p-2.5 text-center">
+    <Icon size={15} className="text-primary mx-auto" />
+    <p className="font-display text-2xl leading-none mt-1">
+      {value}
+      {suffix}
+    </p>
+    <p className="text-[9px] uppercase tracking-widest font-mono text-muted-foreground mt-1">{label}</p>
+  </div>
+);
+
+const SportPassportRow = ({ sport }: { sport: SportProgress }) => {
+  const level = getLevelFromXp(sport.xp);
+  const current = getXpForCurrentLevel(level);
+  const next = getXpForNextLevel(level);
+  const needed = getXpNeededForNextLevel(sport.xp);
+  const progress = getLevelProgressPercentage(sport.xp);
+  return (
+    <div className="rounded border border-border bg-card p-4">
+      <div className="flex items-center gap-3">
+        <div className="h-11 w-11 rounded bg-primary/10 border border-primary/30 flex items-center justify-center text-xl">
+          {SPORT_ICON[sport.sport] ?? "•"}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-display text-xl leading-none">{SPORT_LABEL[sport.sport] ?? sport.sport}</p>
+          <p className="text-[10px] uppercase tracking-widest font-mono text-muted-foreground mt-1">
+            {LEVEL_LABEL[sport.skill_level ?? ""] ?? "Sin nivel"} · {sport.games_played} partidos
+          </p>
+        </div>
+        <div className="text-right">
+          <p className="font-display text-2xl leading-none text-primary">Lv {level}</p>
+          <p className="text-[10px] uppercase tracking-widest font-mono text-muted-foreground">{sport.xp} XP</p>
+        </div>
+      </div>
+      <div className="mt-3 h-1.5 rounded-full bg-secondary overflow-hidden">
+        <div className="h-full rounded-full bg-primary" style={{ width: `${progress}%` }} />
+      </div>
+      <div className="mt-2 flex items-center justify-between gap-3 text-[10px] uppercase tracking-widest font-mono text-muted-foreground">
+        <span>{sport.xp - current} / {next - current} XP</span>
+        <span>{needed} XP para Lv {level + 1}</span>
+      </div>
+    </div>
   );
 };
 

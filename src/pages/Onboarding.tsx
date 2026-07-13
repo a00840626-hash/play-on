@@ -16,8 +16,8 @@ const SPORTS: { id: string; label: string }[] = [
   { id: "futbol", label: "Fútbol" },
   { id: "padel", label: "Pádel" },
   { id: "tenis", label: "Tenis" },
-  { id: "basket", label: "Basket" },
-  { id: "volley", label: "Volley" },
+  { id: "basquetbol", label: "Básquet" },
+  { id: "voleibol", label: "Voleibol" },
   { id: "running", label: "Running" },
 ];
 

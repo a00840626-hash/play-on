@@ -60,7 +60,7 @@ const NewMatch = () => {
     // Host auto-joins
     await supabase.from("match_participants").insert({ match_id: data.id, user_id: user.id });
     setSaving(false);
-    toast({ title: "¡Partido creado!" });
+    toast({ title: "+40 XP — Partido creado", description: "Tu partido ya aparece para otros jugadores." });
     navigate(`/matches/${data.id}`);
   };
 

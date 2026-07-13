@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Users, Clock, Loader2, Trash2 } from "lucide-react";
+import { ArrowLeft, MapPin, Users, Clock, Loader2, Trash2, CheckCircle2 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { InitialsAvatar } from "@/components/InitialsAvatar";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +12,7 @@ interface MatchRow {
   id: string; host_id: string; sport: string; title: string; starts_at: string;
   duration_minutes: number; location: string | null; max_players: number; skill_level: string | null;
   price_per_player: number; notes: string | null; court_id: string | null;
+  status: string;
   court: { name: string; address: string } | null;
 }
 
@@ -51,6 +52,7 @@ const MatchDetail = () => {
   const isHost = user?.id === match.host_id;
   const joined = participants.some((p) => p.user_id === user?.id);
   const spotsLeft = match.max_players - participants.length;
+  const completed = match.status === "completed";
 
   const join = async () => {
     if (!user) return;
@@ -77,6 +79,15 @@ const MatchDetail = () => {
     toast({ title: "Partido cancelado" });
     navigate("/matches");
   };
+  const complete = async () => {
+    if (!user || !isHost || completed) return;
+    setActing(true);
+    const { error } = await supabase.from("matches").update({ status: "completed" }).eq("id", match.id);
+    setActing(false);
+    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+    toast({ title: "+150 XP — Partido completado", description: "También se registró para los jugadores inscritos." });
+    load();
+  };
 
   return (
     <AppShell subtitle="Partido">
@@ -85,9 +96,16 @@ const MatchDetail = () => {
           <ArrowLeft size={18} />
         </Link>
         {isHost && (
-          <button onClick={cancel} className="h-10 px-3 rounded bg-card border border-destructive/40 text-destructive text-xs font-bold uppercase tracking-wider flex items-center gap-1">
-            <Trash2 size={14} /> Cancelar
-          </button>
+          <div className="flex gap-2">
+            {!completed && (
+              <button onClick={complete} disabled={acting} className="h-10 px-3 rounded bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider flex items-center gap-1">
+                <CheckCircle2 size={14} /> Completar
+              </button>
+            )}
+            <button onClick={cancel} disabled={acting || completed} className="h-10 px-3 rounded bg-card border border-destructive/40 text-destructive text-xs font-bold uppercase tracking-wider flex items-center gap-1 disabled:opacity-50">
+              <Trash2 size={14} /> Cancelar
+            </button>
+          </div>
         )}
       </div>
 
@@ -95,6 +113,11 @@ const MatchDetail = () => {
         <p className="text-xs uppercase tracking-widest font-mono text-primary">{match.sport}</p>
         <h1 className="font-display text-4xl leading-none mt-1">{match.title}</h1>
         <p className="text-sm text-muted-foreground capitalize mt-2">{dateStr} · {timeStr}</p>
+        {completed && (
+          <p className="inline-flex mt-3 rounded-full border border-primary/50 bg-primary/10 px-3 py-1 text-[10px] uppercase tracking-widest font-mono text-primary">
+            Partido completado
+          </p>
+        )}
       </section>
 
       <section className="px-4 mt-5 grid grid-cols-2 gap-3">

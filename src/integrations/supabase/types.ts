@@ -476,11 +476,13 @@ export type Database = {
           availability: string[] | null
           avatar_url: string | null
           bio: string | null
+          broad_area: string | null
           colonia: string | null
           created_at: string
           display_name: string
           distance_km: number | null
           id: string
+          is_discoverable: boolean
           municipio: string | null
           onboarded: boolean
           online: boolean | null
@@ -493,11 +495,13 @@ export type Database = {
           availability?: string[] | null
           avatar_url?: string | null
           bio?: string | null
+          broad_area?: string | null
           colonia?: string | null
           created_at?: string
           display_name?: string
           distance_km?: number | null
           id: string
+          is_discoverable?: boolean
           municipio?: string | null
           onboarded?: boolean
           online?: boolean | null
@@ -510,11 +514,13 @@ export type Database = {
           availability?: string[] | null
           avatar_url?: string | null
           bio?: string | null
+          broad_area?: string | null
           colonia?: string | null
           created_at?: string
           display_name?: string
           distance_km?: number | null
           id?: string
+          is_discoverable?: boolean
           municipio?: string | null
           onboarded?: boolean
           online?: boolean | null
@@ -548,6 +554,150 @@ export type Database = {
           source?: string | null
         }
         Relationships: []
+      }
+      user_progress: {
+        Row: {
+          badges_earned: number
+          created_at: string
+          current_streak: number
+          games_played: number
+          last_activity_date: string | null
+          longest_streak: number
+          overall_level: number
+          overall_xp: number
+          sports_friends_made: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          badges_earned?: number
+          created_at?: string
+          current_streak?: number
+          games_played?: number
+          last_activity_date?: string | null
+          longest_streak?: number
+          overall_level?: number
+          overall_xp?: number
+          sports_friends_made?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          badges_earned?: number
+          created_at?: string
+          current_streak?: number
+          games_played?: number
+          last_activity_date?: string | null
+          longest_streak?: number
+          overall_level?: number
+          overall_xp?: number
+          sports_friends_made?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_progress_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_sport_profiles: {
+        Row: {
+          created_at: string
+          games_played: number
+          level: number
+          skill_level: string | null
+          sport: string
+          updated_at: string
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          created_at?: string
+          games_played?: number
+          level?: number
+          skill_level?: string | null
+          sport: string
+          updated_at?: string
+          user_id: string
+          xp?: number
+        }
+        Update: {
+          created_at?: string
+          games_played?: number
+          level?: number
+          skill_level?: string | null
+          sport?: string
+          updated_at?: string
+          user_id?: string
+          xp?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_sport_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      xp_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          invalidated_at: string | null
+          invalidation_reason: string | null
+          is_valid: boolean
+          metadata: Json
+          source_id: string
+          source_table: string
+          sport: string | null
+          user_id: string
+          xp_amount: number
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          invalidated_at?: string | null
+          invalidation_reason?: string | null
+          is_valid?: boolean
+          metadata?: Json
+          source_id: string
+          source_table: string
+          sport?: string | null
+          user_id: string
+          xp_amount: number
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          invalidated_at?: string | null
+          invalidation_reason?: string | null
+          is_valid?: boolean
+          metadata?: Json
+          source_id?: string
+          source_table?: string
+          sport?: string | null
+          user_id?: string
+          xp_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "xp_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

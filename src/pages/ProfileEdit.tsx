@@ -7,9 +7,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 import { InitialsAvatar } from "@/components/InitialsAvatar";
 
-const SPORTS = ["futbol", "tenis", "padel", "basquetbol", "pickleball", "voleibol"] as const;
+const SPORTS = ["futbol", "tenis", "padel", "basquetbol", "pickleball", "voleibol", "running"] as const;
 const SPORT_LABELS: Record<string, string> = {
-  futbol: "Fútbol", tenis: "Tenis", padel: "Pádel", basquetbol: "Básquet", pickleball: "Pickleball", voleibol: "Voleibol",
+  futbol: "Fútbol", tenis: "Tenis", padel: "Pádel", basquetbol: "Básquet", pickleball: "Pickleball", voleibol: "Voleibol", running: "Running",
 };
 const LEVELS = [
   { id: "principiante", label: "Principiante" },
@@ -30,6 +30,8 @@ const ProfileEdit = () => {
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
   const [municipio, setMunicipio] = useState(MUNICIPIOS[0]);
+  const [broadArea, setBroadArea] = useState("");
+  const [isDiscoverable, setIsDiscoverable] = useState(true);
   const [skill, setSkill] = useState("intermedio");
   const [sports, setSports] = useState<string[]>([]);
   const [availability, setAvailability] = useState<string[]>([]);
@@ -43,6 +45,8 @@ const ProfileEdit = () => {
         setDisplayName(data.display_name ?? "");
         setBio(data.bio ?? "");
         setMunicipio(data.municipio ?? MUNICIPIOS[0]);
+        setBroadArea(data.broad_area ?? data.municipio ?? "");
+        setIsDiscoverable(data.is_discoverable ?? true);
         setSkill(data.skill_level ?? "intermedio");
         setSports(data.sports ?? []);
         setAvailability(data.availability ?? []);
@@ -66,6 +70,8 @@ const ProfileEdit = () => {
       display_name: displayName.trim(),
       bio: bio.trim() || null,
       municipio,
+      broad_area: broadArea.trim() || municipio,
+      is_discoverable: isDiscoverable,
       skill_level: skill,
       sports,
       availability,
@@ -153,6 +159,31 @@ const ProfileEdit = () => {
             {MUNICIPIOS.map((m) => <option key={m} value={m}>{m}</option>)}
           </select>
         </Field>
+
+        <Field label="Area visible">
+          <input
+            value={broadArea}
+            onChange={(e) => setBroadArea(e.target.value)}
+            maxLength={80}
+            placeholder={municipio}
+            className="w-full h-12 px-3 rounded bg-card border border-border focus:border-primary focus:outline-none text-sm"
+          />
+        </Field>
+
+        <label className="flex items-start gap-3 rounded border border-border bg-card p-3">
+          <input
+            type="checkbox"
+            checked={isDiscoverable}
+            onChange={(e) => setIsDiscoverable(e.target.checked)}
+            className="mt-1 accent-primary"
+          />
+          <span>
+            <span className="block text-xs font-bold uppercase tracking-widest font-mono">Aparecer en Find Players</span>
+            <span className="block text-xs text-muted-foreground mt-1">
+              Muestra solo tu nombre, foto, zona, deportes, nivel, disponibilidad y passport publico.
+            </span>
+          </span>
+        </label>
 
         <Field label="Nivel">
           <div className="grid grid-cols-3 gap-2">
