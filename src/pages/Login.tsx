@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { toast } from "@/hooks/use-toast";
 import { authErrorMessage, isEmailNotConfirmed } from "@/lib/auth-errors";
+import { isNativePlatform, signInWithGoogleNative } from "@/lib/native-oauth";
 
 const schema = z.object({
   email: z.string().trim().email("Email inválido").max(255),
@@ -76,6 +77,18 @@ const Login = () => {
 
   const googleSignIn = async () => {
     setLoading(true);
+    if (isNativePlatform()) {
+      // En iOS/Android el OAuth debe pasar por el navegador del sistema:
+      // Google bloquea el login dentro del WebView embebido.
+      const { error } = await signInWithGoogleNative();
+      setLoading(false);
+      if (error) {
+        toast({ title: "No se pudo entrar con Google", description: authErrorMessage(error), variant: "destructive" });
+      } else {
+        navigate("/");
+      }
+      return;
+    }
     const res = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
     });
