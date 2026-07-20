@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { ArrowRight, Mail, Lock, Loader2 } from "lucide-react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,6 +15,12 @@ const schema = z.object({
 
 const Login = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  // Preserva la ruta original (p. ej. /.lovable/oauth/consent?authorization_id=…)
+  // para volver ahí después de iniciar sesión o registrarse. Solo aceptamos rutas
+  // relativas mismo-origen.
+  const rawNext = searchParams.get("next") ?? "";
+  const nextPath = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/";
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -36,7 +42,7 @@ const Login = () => {
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: `${window.location.origin}/onboarding` },
+          options: { emailRedirectTo: `${window.location.origin}${nextPath !== "/" ? nextPath : "/onboarding"}` },
         });
         if (error) throw error;
         toast({
@@ -46,7 +52,7 @@ const Login = () => {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate("/");
+        navigate(nextPath);
       }
     } catch (err: any) {
       if (isEmailNotConfirmed(err)) setNeedsConfirmation(true);
@@ -85,12 +91,12 @@ const Login = () => {
       if (error) {
         toast({ title: "No se pudo entrar con Google", description: authErrorMessage(error), variant: "destructive" });
       } else {
-        navigate("/");
+        navigate(nextPath);
       }
       return;
     }
     const res = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: `${window.location.origin}${nextPath}`,
     });
     if (res.error) {
       toast({ title: "No se pudo entrar con Google", description: authErrorMessage(res.error), variant: "destructive" });

@@ -23,6 +23,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Terms from "./pages/Terms";
+import OAuthConsent from "./pages/OAuthConsent";
 import { DeviceFrame } from "./components/playon/DeviceFrame";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -81,6 +82,7 @@ const App = () => (
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<Terms />} />
+              <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
               <Route path="/onboarding" element={<RequireAuth><Onboarding /></RequireAuth>} />
               <Route path="/" element={<RequireAuth><Home /></RequireAuth>} />
               <Route path="/courts" element={<RequireAuth><Courts /></RequireAuth>} />
