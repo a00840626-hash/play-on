@@ -1,0 +1,141 @@
+{
+  "version": 1,
+  "sdk_version": "0.24.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://tkziycwbbpjvnlfnzwbt.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "playon-mcp",
+      "version": "0.1.0",
+      "title": "PlayOn MCP"
+    },
+    "tools": [
+      {
+        "name": "list_courts",
+        "title": "Listar canchas",
+        "description": "Lista canchas activas en PlayOn. Filtra opcionalmente por deporte y/o municipio de Monterrey.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "sport": {
+              "description": "Deporte (ej. futbol, tenis, padel)",
+              "type": "string"
+            },
+            "municipio": {
+              "description": "Municipio de la Zona Metropolitana de Monterrey",
+              "type": "string"
+            },
+            "limit": {
+              "description": "Máximo de resultados (por defecto 20)",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_open_matches",
+        "title": "Listar partidos abiertos",
+        "description": "Lista los próximos partidos abiertos en PlayOn con cupos disponibles.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "sport": {
+              "description": "Filtra por deporte",
+              "type": "string"
+            },
+            "skill_level": {
+              "description": "Nivel: beginner, intermediate, advanced",
+              "type": "string"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_my_profile",
+        "title": "Ver mi perfil",
+        "description": "Devuelve el perfil PlayOn del usuario autenticado (deportes, nivel, municipio, disponibilidad).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_my_matches",
+        "title": "Mis partidos",
+        "description": "Lista los partidos en los que el usuario autenticado participa o es organizador.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "join_match",
+        "title": "Unirse a un partido",
+        "description": "Registra al usuario autenticado como participante de un partido de PlayOn por su id.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "match_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "description": "UUID del partido al que unirse"
+            }
+          },
+          "required": [
+            "match_id"
+          ]
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
